@@ -1,8 +1,12 @@
-import scipy.io
 import numpy as np
+import matplotlib.pyplot as plt
 
-data = scipy.io.loadmat("E:/data/train/digitStruct.mat")
+from skimage import io
 
-for i in data:
-    if '__' not in i and 'readme' not in i:
-        np.savetxt(("output/" + i + ".csv"), data[i], delimiter=',')
+image = io.imread('E:/data/gt_db/s01/01.jpg')
+a = image[0]/255
+plt.imshow(image)
+plt.waitforbuttonpress()
+
+print(image.shape)
+

@@ -51,14 +51,30 @@ namespace ImageConverter
 			var boundBoxesDir = @"E:\data\gt_db\labels";
 			var boundBoxesFileNames = Directory
 					.GetFiles(boundBoxesDir);
+
+			//var list = ImageMaskCreator.GetRegionsRectangles(8, 8);
+
 			var imageArr = new RgbImageArray(opencvMat);
 			var lines = File.ReadAllText(boundBoxesFileNames[ImageCounter]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			var mask = ImageMaskCreator.CreateStringMask(new Rectangle[] { new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])) });
+
+			var maskCreator = new ImageMaskCreator(16, 16);
+			var mask = maskCreator.FillMasks(new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])));
+			//var mask = ImageMaskCreator.CreateStringMask(new Rectangle[] { new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])) });
+
+			//Рисование изображения
+			var img = maskCreator.DrawMask(mat);
+			img.Rectangle(new Rect(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])), CvColor.Red);
+			using(var w = new Window(img))
+			{
+				Cv.WaitKey();
+			}
 
 			sb.Append(imageArr.ToString());
 
-			AppendText(Path.Combine(outputDir, "masks.csv"), mask);
-			AppendText(outputPath, sb.ToString());
+			var maskStr = maskCreator.ToString();
+
+			//AppendText(Path.Combine(outputDir, "masks.csv"), maskStr);
+			//AppendText(outputPath, sb.ToString());
 
 			ImageCounter++;
 		}

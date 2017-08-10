@@ -31,6 +31,7 @@ x = tf.placeholder(tf.float32, shape=[None, 128 * 96])
 # вектором, указывающим, в какой области вероятнее всего находится лицо.
 y_ = tf.placeholder(tf.float32, shape=[None, 225])
 
+
 filename_queue = tf.train.input_producer(['E:/data/gt_db/gt_db.zip'])
 
 reader = tf.WholeFileReader()

@@ -26,7 +26,13 @@ namespace ImageConverter
 		private void ConvertFiles()
 		{
 			var rootDir = Path.Combine(Directory.GetCurrentDirectory(), CsvFileConverter.RootImageFolderName);
-			 Convert(rootDir);
+
+			if(!Directory.Exists(rootDir))
+			{
+				Directory.CreateDirectory(rootDir);
+			}
+
+			Convert(rootDir);
 		}
 
 		private void Convert(string path)
@@ -49,8 +55,6 @@ namespace ImageConverter
 
 				foreach(var fullFileName in fullFileNames)
 				{
-					
-					//_imageResizer.Resize(fullFileName);
 					_csvFileConverter.Convert(fullFileName);
 				}
 			}

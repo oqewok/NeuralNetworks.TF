@@ -14,7 +14,6 @@ namespace ImageConverter
 	{
 		public const string RootImageFolderName  = "images";
 		public const string RootOutputFolderName = "out";
-		public const string OutputFileName       = "data.csv";
 		
 		public CsvFileConverter(string fileExtension)
 		{
@@ -46,20 +45,20 @@ namespace ImageConverter
 				Directory.CreateDirectory(outputDir);
 			}
 			
-			var outputPath = Path.Combine(outputDir, OutputFileName);
 			var sb = new StringBuilder();
 			var boundBoxesDir = @"E:\data\gt_db\labels";
 			var boundBoxesFileNames = Directory
 					.GetFiles(boundBoxesDir);
 
-			//var list = ImageMaskCreator.GetRegionsRectangles(8, 8);
+			var boundBoxesFileName = boundBoxesFileNames[ImageCounter];
+			var outputPath = Path.Combine(outputDir, $"mask{ImageCounter + 1}.csv");
 
-			var imageArr = new RgbImageArray(opencvMat);
-			var lines = File.ReadAllText(boundBoxesFileNames[ImageCounter]).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			var lines = File
+				.ReadAllText(boundBoxesFileName)
+				.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
 			var maskCreator = new ImageMaskCreator(16, 16);
 			var mask = maskCreator.FillMasks(new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])));
-			//var mask = ImageMaskCreator.CreateStringMask(new Rectangle[] { new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])) });
 
 			//Рисование изображения
 			var img = maskCreator.DrawMask(mat);
@@ -69,12 +68,10 @@ namespace ImageConverter
 				Cv.WaitKey();
 			}
 
-			sb.Append(imageArr.ToString());
-
 			var maskStr = maskCreator.ToString();
 
-			//AppendText(Path.Combine(outputDir, "masks.csv"), maskStr);
-			//AppendText(outputPath, sb.ToString());
+			// Запись в файл
+			//AppendText(outputPath, maskStr);
 
 			ImageCounter++;
 		}

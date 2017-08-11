@@ -14,7 +14,9 @@ namespace ImageConverter
 	{
 		public const string RootImageFolderName  = "images";
 		public const string RootOutputFolderName = "out";
-		
+
+		public readonly string TrainFilePath = Path.Combine(Directory.GetCurrentDirectory(), "out", "train.txt");
+
 		public CsvFileConverter(string fileExtension)
 		{
 			ImageCounter = 0;
@@ -38,7 +40,7 @@ namespace ImageConverter
 				fy: 1.0,
 				interpolation: Interpolation.Cubic);
 
-			var outputDir = Path.Combine(Directory.GetCurrentDirectory(), RootOutputFolderName);
+			var outputDir = @"E:\data\masks";
 
 			if(!Directory.Exists(outputDir))
 			{
@@ -63,15 +65,16 @@ namespace ImageConverter
 			//Рисование изображения
 			var img = maskCreator.DrawMask(mat);
 			img.Rectangle(new Rect(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])), CvColor.Red);
-			using(var w = new Window(img))
-			{
-				Cv.WaitKey();
-			}
+			//using(var w = new Window(img))
+			//{
+			//	Cv.WaitKey();
+			//}
 
 			var maskStr = maskCreator.ToString();
 
 			// Запись в файл
-			//AppendText(outputPath, maskStr);
+			AppendText(outputPath, maskStr);
+			AppendText(TrainFilePath, $@"{fullFileName} {outputPath}");
 
 			ImageCounter++;
 		}

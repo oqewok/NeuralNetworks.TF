@@ -1,14 +1,14 @@
 import tensorflow as tf
-from skimage import io
 import numpy as np
 
 IMG_WIDTH = 128
 IMG_HEIGHT = 96
+TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 
 # читает .txt файл, в котором в каждой строке через пробел отделены путь к файлу с изображением и путь к разметке
 # изображения.
-def read_labeled_image_list(image_list_file):
-    f = open(image_list_file, 'r')
+def read_labeled_image_list():
+    f = open(TRAIN_FILE_PATH, 'r')
     filenames = []
     labels = []
 
@@ -20,7 +20,7 @@ def read_labeled_image_list(image_list_file):
     f.close()
     return filenames, labels
 
-
+# читает изображения и их маски из файлов
 def read_images_from_disk(image_files, masks_file_list):
     masks = read_masks(masks_file_list)
     images = []
@@ -31,7 +31,7 @@ def read_images_from_disk(image_files, masks_file_list):
         images.append(image)
 
     result_images = tf.image.resize_bicubic(images, [IMG_HEIGHT, IMG_WIDTH])
-    return result_images, masks
+    return [result_images, masks]
 
 
 # читает из переданных файлов маски изображений и возвращает массив float из этих масок.
@@ -47,14 +47,6 @@ def read_masks(masks_file_list):
     return masks
 
 
-def get_batch(data, count):
-    # здесь берем порциями данные
-    print()
-
-
 # читаем пути к файлам с изображениями и их масками
-names, labels = read_labeled_image_list('E:/Study/Mallenom/train.txt')
-
-images, masks = read_images_from_disk(names, labels)
-
-print()
+# names, labels = read_labeled_image_list()
+# images, masks = read_images_from_disk(names, labels)

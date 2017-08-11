@@ -76,13 +76,3 @@ def get_training_model():
     y = tf.matmul(h_fc1, W_fc2) + b_fc2
 
     return x, y, conv_vars + [W_fc1, b_fc1, W_fc2, b_fc2]
-
-
-# Целевые классы результатов y_ также будут состоять из 2d-тензора, где каждая строка является одним 255-мерным
-# вектором, указывающим, в какой области вероятнее всего находится лицо.
-y_ = tf.placeholder(tf.float32, shape=[None, 225])
-
-filename_queue = tf.train.input_producer(['E:/data/gt_db/gt_db.zip'])
-
-reader = tf.WholeFileReader()
-key, value = reader.read(filename_queue)

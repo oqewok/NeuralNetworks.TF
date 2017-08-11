@@ -1,8 +1,10 @@
 import tensorflow as tf
 import numpy as np
+import image_proc
 
 IMG_WIDTH = 128
 IMG_HEIGHT = 96
+
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 
 # читает .txt файл, в котором в каждой строке через пробел отделены путь к файлу с изображением и путь к разметке
@@ -26,9 +28,11 @@ def read_images_from_disk(image_files, masks_file_list):
     images = []
 
     for image_file in image_files:
-        file_contents = tf.read_file(image_file)
-        image = tf.image.decode_jpeg(file_contents, channels=3)
-        images.append(image)
+        # file_contents = tf.read_file(image_file)
+        # image = tf.image.decode_jpeg(file_contents, channels=3)
+        image = image_proc.read_and_normalize(image_file)
+        t = tf.convert_to_tensor(image)
+        images.append(t)
 
     result_images = tf.image.resize_bicubic(images, [IMG_HEIGHT, IMG_WIDTH])
     return [result_images, masks]
@@ -48,5 +52,5 @@ def read_masks(masks_file_list):
 
 
 # читаем пути к файлам с изображениями и их масками
-# names, labels = read_labeled_image_list()
-# images, masks = read_images_from_disk(names, labels)
+names, labels = read_labeled_image_list()
+images, masks = read_images_from_disk(names, labels)

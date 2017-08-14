@@ -2,17 +2,19 @@ import tensorflow as tf
 
 IMG_WIDTH = 128
 IMG_HEIGHT = 96
+CHANNELS = 3
 OutputNodesCount = 225
+
 
 # функция инициализации весов
 def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=0.1)
+    initial = tf.truncated_normal(shape, stddev=0.1, name='weights')
     return tf.Variable(initial)
 
 
 # функция инициализации байесов.
 def bias_variable(shape):
-    initial = tf.constant(0.1, shape=shape)
+    initial = tf.constant(0.1, shape=shape, name='biases')
     return tf.Variable(initial)
 
 
@@ -30,14 +32,14 @@ def max_pool(x, ksize=(2, 2), stride=(2, 2)):
 
 def conv_layers():
     # Входные изображения x состоят из 2d-тензора чисел с плавающей запятой.
-    x = tf.placeholder(tf.float32, shape=[None, None, None])
+    x = tf.placeholder(tf.float32, shape=[10, 96, 128, 3], name='inputs')
 
     # First layer (conv_5x5, max_pool_2x2). Result: 64x48x48
-    W_conv1 = weight_variable([5, 5, 1, 48])
+    W_conv1 = weight_variable([5, 5, 1 * CHANNELS, 48])
     b_conv1 = bias_variable([48])
-    x_expanded = tf.expand_dims(x, 3)
+    # x_expanded = tf.expand_dims(x, 3)
 
-    h_conv1 = tf.nn.relu(conv2d(x_expanded, W_conv1) + b_conv1)
+    h_conv1 = tf.nn.relu(conv2d(x, W_conv1) + b_conv1)
     h_pool1 = max_pool(h_conv1, ksize=(2, 2), stride=(2, 2))
 
     # Second layer (conv_5x5, max_pool_1x2). Result: 64x24x64
@@ -69,8 +71,12 @@ def get_training_model():
     conv_layer_flat = tf.reshape(conv_layer, [-1, 32 * 12 * 128])
     h_fc1 = tf.nn.relu(tf.matmul(conv_layer_flat, W_fc1) + b_fc1)
 
+    # дополнительный параметр keep_prob в системе feed_dict для управления отсевом.
+    # keep_prob = tf.placeholder(tf.float32)
+    # h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+
     # Output layer
-    W_fc2 = weight_variable([2048, OutputNodesCount])
+    W_fc2 = weight_variable([4096, OutputNodesCount])
     b_fc2 = bias_variable([OutputNodesCount])
 
     y = tf.matmul(h_fc1, W_fc2) + b_fc2

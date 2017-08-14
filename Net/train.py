@@ -1,19 +1,10 @@
 import tensorflow as tf
-import numpy as np
 import data_reader
 import conv_nn_faces_model as model
-import sys
 
 NUM_OF_EPOCHS = 10000
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-4
-
-
-def unzip(b):
-    xs, ys = zip(*b)
-    xs = np.array(xs)
-    ys = np.array(ys)
-    return xs, ys
 
 
 def load_train_data():
@@ -23,50 +14,65 @@ def load_train_data():
     return data
 
 
-def get_batched_data(data, BATCH_COUNT):
+def get_batched_data(data, batch_size):
     img, masks = data[0], data[1]
-    batched_img = [img[i:i + BATCH_COUNT] for i in range(0, len(img), BATCH_COUNT)]
-    batched_masks = [masks[i:i + BATCH_COUNT] for i in range(0, len(masks), BATCH_COUNT)]
+    batched_img = [img[i:i + batch_size] for i in range(0, 750, batch_size)]
+    batched_masks = [masks[i:i + batch_size] for i in range(0, 750, batch_size)]
     return [batched_img, batched_masks]
 
 
 def next_batch(batched_data, batch_index):
     i, l = batched_data[0], batched_data[1]
-    images = i[batch_index, :]
-    masks = l[batch_index, :]
+    images = i[batch_index]
+    masks = l[batch_index]
     return [images, masks]
 
 
 def get_loss(y, y_):
     loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=y_))
+        tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
     return loss
 
 
 def train(num_of_epochs, learn_rate, batch_size):
+    print('Loading model...')
     x, y, params = model.get_training_model()
 
-    y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount])
+    y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='outputs')
 
     loss = get_loss(y, y_)
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
 
+    print('Loading data...')
     data = load_train_data()
+    print('Data batching...')
     batched_data = get_batched_data(data, batch_size)
 
-    init = tf.initialize_all_variables()
+    init = tf.global_variables_initializer()
+
+    saver = tf.train.Saver()
 
     with tf.Session() as sess:
+        print('Training...')
         sess.run(init)
 
-        for i in range(num_of_epochs):
-            batch = next_batch(batched_data, i % batch_size)
+        for step in range(num_of_epochs + 1):
+            batch = next_batch(batched_data, step % batch_size)
             train_step.run(feed_dict={x: batch[0], y_: batch[1]})
+
+            if step % 10 == 0:
+                print('Step', step, 'of', num_of_epochs)
+
+                print('Saving...')
+                saver.save(sess, './my-model')
+                print('Saving complete.')
+
+        saver.save(sess, './my-model')
+        # print(sess.run(y_))
 
     print('Success!')
 
-
 if __name__ == "__main__":
-    train(num_of_epochs=75,
+    train(num_of_epochs=20,
           learn_rate=LEARNING_RATE,
           batch_size=BATCH_SIZE)

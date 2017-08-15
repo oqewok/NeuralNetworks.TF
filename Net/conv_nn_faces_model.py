@@ -79,6 +79,6 @@ def get_training_model():
     W_fc2 = weight_variable([4096, OutputNodesCount])
     b_fc2 = bias_variable([OutputNodesCount])
 
-    y = tf.matmul(h_fc1, W_fc2) + b_fc2
+    y = tf.nn.sigmoid(tf.matmul(h_fc1, W_fc2) + b_fc2, name='sigmoid')
 
     return x, y, conv_vars + [W_fc1, b_fc1, W_fc2, b_fc2]

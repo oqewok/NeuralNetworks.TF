@@ -63,7 +63,7 @@ def train(num_of_epochs, learn_rate, batch_size):
             batch = next_batch(batched_data, step % batch_size)
             train_step.run(feed_dict={x: batch[0], y_: batch[1]})
 
-            if step % 100 == 0:
+            if step % 1 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
                 # print('Saving...')
@@ -76,12 +76,12 @@ def train(num_of_epochs, learn_rate, batch_size):
         f.close()
 
         print('Saving...')
-        saver.save(sess, './my-model')
+        saver.save(sess, './my-model.ckpt')
         print('Saving complete.')
 
     print('Success!')
 
 if __name__ == "__main__":
-    train(num_of_epochs=100,
+    train(num_of_epochs=10,
           learn_rate=LEARNING_RATE,
           batch_size=BATCH_SIZE)

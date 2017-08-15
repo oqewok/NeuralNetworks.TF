@@ -1,6 +1,7 @@
 import tensorflow as tf
 import data_reader
 import conv_nn_faces_model as model
+import numpy as np
 
 NUM_OF_EPOCHS = 10000
 BATCH_SIZE = 10
@@ -35,6 +36,8 @@ def get_loss(y, y_):
 
 
 def train(num_of_epochs, learn_rate, batch_size):
+    np.set_printoptions(threshold=np.nan, suppress=True)
+
     print('Loading model...')
     x, y, params = model.get_training_model()
 
@@ -60,19 +63,25 @@ def train(num_of_epochs, learn_rate, batch_size):
             batch = next_batch(batched_data, step % batch_size)
             train_step.run(feed_dict={x: batch[0], y_: batch[1]})
 
-            if step % 10 == 0:
+            if step % 100 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                print('Saving...')
-                saver.save(sess, './my-model')
-                print('Saving complete.')
+                # print('Saving...')
+                # saver.save(sess, './my-model')
+                # print('Saving complete.')
 
+        f = open('E:/Study/Mallenom/1.txt', 'w')
+        w = y.eval(feed_dict={x: next_batch(batched_data, batch_size)[0]})
+        f.write(np.array2string(w, separator=','))
+        f.close()
+
+        print('Saving...')
         saver.save(sess, './my-model')
-        # print(sess.run(y_))
+        print('Saving complete.')
 
     print('Success!')
 
 if __name__ == "__main__":
-    train(num_of_epochs=20,
+    train(num_of_epochs=100,
           learn_rate=LEARNING_RATE,
           batch_size=BATCH_SIZE)

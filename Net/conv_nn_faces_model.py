@@ -32,7 +32,7 @@ def max_pool(x, ksize=(2, 2), stride=(2, 2)):
 
 def conv_layers():
     # Входные изображения x состоят из 2d-тензора чисел с плавающей запятой.
-    x = tf.placeholder(tf.float32, shape=[10, 96, 128, 3], name='inputs')
+    x = tf.placeholder(tf.float32, shape=[None, 96, 128, 3], name='inputs')
 
     # First layer (conv_5x5, max_pool_2x2). Result: 64x48x48
     W_conv1 = weight_variable([5, 5, 1 * CHANNELS, 48])

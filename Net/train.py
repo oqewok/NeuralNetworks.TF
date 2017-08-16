@@ -8,24 +8,33 @@ BATCH_SIZE = 10
 LEARNING_RATE = 1e-4
 
 
-def load_train_data():
-    # здесь берем порциями данные
+# Загружает список изображений и соответствующих им меток
+def load_full_image_list():
     names, labels = data_reader.read_labeled_image_list()
+    return names, labels
+
+
+# Загрузка самих изображений и меток из файлов
+def load_train_data(names, labels):
+    # здесь берем порциями данные
     data = data_reader.read_images_from_disk(names, labels)
     return data
 
 
-def get_batched_data(data, batch_size):
-    img, masks = data[0], data[1]
-    batched_img = [img[i:i + batch_size] for i in range(0, 750, batch_size)]
-    batched_masks = [masks[i:i + batch_size] for i in range(0, 750, batch_size)]
+# Загружает список изображений и меток и дробит данные на равные части.
+def get_batched_data(batch_size):
+    names, labels = load_full_image_list()
+    batched_img = [names[i:i + batch_size] for i in range(0, 750, batch_size)]
+    batched_masks = [labels[i:i + batch_size] for i in range(0, 750, batch_size)]
     return [batched_img, batched_masks]
 
 
+# Загружает порцию изображений и меток из файлов
 def next_batch(batched_data, batch_index):
     i, l = batched_data[0], batched_data[1]
-    images = i[batch_index]
-    masks = l[batch_index]
+    img_batch, lab_batch = i[batch_index], l[batch_index]
+
+    images, masks = load_train_data(img_batch, lab_batch)
     return [images, masks]
 
 
@@ -46,10 +55,8 @@ def train(num_of_epochs, learn_rate, batch_size):
     loss = get_loss(y, y_)
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
 
-    print('Loading data...')
-    data = load_train_data()
     print('Data batching...')
-    batched_data = get_batched_data(data, batch_size)
+    batched_data = get_batched_data(batch_size)
 
     init = tf.global_variables_initializer()
 
@@ -63,12 +70,12 @@ def train(num_of_epochs, learn_rate, batch_size):
             batch = next_batch(batched_data, step % batch_size)
             train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
 
-            if step % 1 == 0:
+            if step % 100 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                # print('Saving...')
-                # saver.save(sess, './my-model')
-                # print('Saving complete.')
+                print('Saving...')
+                saver.save(sess, './my-model')
+                print('Saving complete.')
 
         f = open('E:/Study/Mallenom/1.txt', 'w')
         w = y.eval(feed_dict={x: next_batch(batched_data, batch_size)[0]})
@@ -82,6 +89,6 @@ def train(num_of_epochs, learn_rate, batch_size):
     print('Success!')
 
 if __name__ == "__main__":
-    train(num_of_epochs=10,
+    train(num_of_epochs=NUM_OF_EPOCHS,
           learn_rate=LEARNING_RATE,
           batch_size=BATCH_SIZE)

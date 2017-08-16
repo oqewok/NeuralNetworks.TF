@@ -4,10 +4,8 @@ import train
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 
-print('Loading data...')
-data = train.load_train_data()
 print('Data batching...')
-batched_data = train.get_batched_data(data, train.BATCH_SIZE)
+batched_data = train.get_batched_data(train.BATCH_SIZE)
 
 batch = train.next_batch(batched_data, train.BATCH_SIZE)
 

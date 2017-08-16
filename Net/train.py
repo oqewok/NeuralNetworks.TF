@@ -3,7 +3,9 @@ import data_reader
 import conv_nn_faces_model as model
 import numpy as np
 
-NUM_OF_EPOCHS = 10000
+from datetime import datetime, date, time
+
+NUM_OF_EPOCHS = 1000
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-4
 
@@ -48,7 +50,7 @@ def train(num_of_epochs, learn_rate, batch_size):
     np.set_printoptions(threshold=np.nan, suppress=True)
 
     print('Loading model...')
-    x, y, keep_prob, params = model.get_training_model()
+    x, y, keep_prob = model.get_training_model()
 
     y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='outputs')
 
@@ -66,26 +68,30 @@ def train(num_of_epochs, learn_rate, batch_size):
         print('Training...')
         sess.run(init)
 
+        print('Start time is', datetime.today())
+
         for step in range(num_of_epochs + 1):
             batch = next_batch(batched_data, step % batch_size)
             train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
 
-            if step % 100 == 0:
+            if step % 10 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                print('Saving...')
-                saver.save(sess, './my-model')
-                print('Saving complete.')
+                if step % 100 == 0:
+                    print('Saving...')
+                    saver.save(sess, './model.ckpt')
+                    print('Saving complete.')
 
-        f = open('E:/Study/Mallenom/1.txt', 'w')
-        w = y.eval(feed_dict={x: next_batch(batched_data, batch_size)[0]})
-        f.write(np.array2string(w, separator=','))
-        f.close()
+        # f = open('E:/Study/Mallenom/1.txt', 'w')
+        # w = y.eval(feed_dict={x: next_batch(batched_data, batch_size)[0]})
+        # f.write(np.array2string(w, separator=','))
+        # f.close()
 
         print('Saving...')
-        saver.save(sess, './my-model.ckpt')
+        saver.save(sess, './model.ckpt')
         print('Saving complete.')
 
+    print('End time is', datetime.today())
     print('Success!')
 
 if __name__ == "__main__":

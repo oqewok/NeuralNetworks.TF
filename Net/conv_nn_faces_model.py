@@ -72,13 +72,13 @@ def get_training_model():
     h_fc1 = tf.nn.relu(tf.matmul(conv_layer_flat, W_fc1) + b_fc1)
 
     # дополнительный параметр keep_prob в системе feed_dict для управления отсевом.
-    # keep_prob = tf.placeholder(tf.float32)
-    # h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+    keep_prob = tf.placeholder(tf.float32)
+    h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
     # Output layer
     W_fc2 = weight_variable([4096, OutputNodesCount])
     b_fc2 = bias_variable([OutputNodesCount])
 
-    y = tf.nn.sigmoid(tf.matmul(h_fc1, W_fc2) + b_fc2, name='sigmoid')
+    y = tf.nn.sigmoid(tf.matmul(h_fc1_drop, W_fc2) + b_fc2, name='sigmoid')
 
-    return x, y, conv_vars + [W_fc1, b_fc1, W_fc2, b_fc2]
+    return x, y, keep_prob, conv_vars + [W_fc1, b_fc1, W_fc2, b_fc2]

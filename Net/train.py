@@ -39,7 +39,7 @@ def train(num_of_epochs, learn_rate, batch_size):
     np.set_printoptions(threshold=np.nan, suppress=True)
 
     print('Loading model...')
-    x, y, params = model.get_training_model()
+    x, y, keep_prob, params = model.get_training_model()
 
     y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='outputs')
 
@@ -61,7 +61,7 @@ def train(num_of_epochs, learn_rate, batch_size):
 
         for step in range(num_of_epochs + 1):
             batch = next_batch(batched_data, step % batch_size)
-            train_step.run(feed_dict={x: batch[0], y_: batch[1]})
+            train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
 
             if step % 1 == 0:
                 print('Step', step, 'of', num_of_epochs)

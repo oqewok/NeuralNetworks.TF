@@ -26,8 +26,8 @@ def load_train_data(names, labels):
 # Загружает список изображений и меток и дробит данные на равные части.
 def get_batched_data(batch_size):
     names, labels = load_full_image_list()
-    batched_img = [names[i:i + batch_size] for i in range(0, 750, batch_size)]
-    batched_masks = [labels[i:i + batch_size] for i in range(0, 750, batch_size)]
+    batched_img = [names[i:i + batch_size] for i in range(0, len(names), batch_size)]
+    batched_masks = [labels[i:i + batch_size] for i in range(0, len(labels), batch_size)]
     return [batched_img, batched_masks]
 
 
@@ -71,24 +71,24 @@ def train(num_of_epochs, learn_rate, batch_size):
         print('Start time is', datetime.today())
 
         for step in range(num_of_epochs + 1):
-            batch = next_batch(batched_data, step % batch_size)
-            train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
+            batch = next_batch(batched_data, step % len(batched_data))
+            train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
 
             if step % 10 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                if step % 100 == 0:
-                    print('Saving...')
-                    saver.save(sess, './model.ckpt')
-                    print('Saving complete.')
+                #if step % 100 == 0:
+                    #print('Saving...')
+                    #saver.save(sess, './model')
+                    #print('Saving complete.')
 
-        # f = open('E:/Study/Mallenom/1.txt', 'w')
-        # w = y.eval(feed_dict={x: next_batch(batched_data, batch_size)[0]})
-        # f.write(np.array2string(w, separator=','))
-        # f.close()
+            f = open('E:/Study/Mallenom/1.txt', 'w')
+            w = y.eval(feed_dict={x: next_batch(batched_data, 0)[0]})
+            f.write(np.array2string(w, separator=','))
+            f.close()
 
         print('Saving...')
-        saver.save(sess, './model.ckpt')
+        saver.save(sess, './model')
         print('Saving complete.')
 
     print('End time is', datetime.today())

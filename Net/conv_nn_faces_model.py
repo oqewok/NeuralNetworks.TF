@@ -53,7 +53,7 @@ def conv_layers():
     W_conv3 = weight_variable([5, 5, 64, 128], 'W_conv3')
     b_conv3 = bias_variable([128], 'b_conv3')
 
-    h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3, name='h_conv3_relu')
+    h_conv3 = tf.nn.sigmoid(conv2d(h_pool2, W_conv3) + b_conv3, name='h_conv3_relu')
     h_pool3 = max_pool(h_conv3, ksize=(2, 2), stride=(2, 2))
 
     return x, h_pool3  # , [W_conv1, b_conv1,
@@ -69,7 +69,7 @@ def get_training_model():
     b_fc1 = bias_variable([4096], 'b_fc1')
 
     conv_layer_flat = tf.reshape(conv_layer, [-1, 32 * 12 * 128])
-    h_fc1 = tf.nn.relu(tf.matmul(conv_layer_flat, W_fc1) + b_fc1, name='fc1_relu')
+    h_fc1 = tf.nn.sigmoid(tf.matmul(conv_layer_flat, W_fc1) + b_fc1, name='fc1_relu')
 
     # дополнительный параметр keep_prob в системе feed_dict для управления отсевом.
     keep_prob = tf.placeholder(tf.float32)

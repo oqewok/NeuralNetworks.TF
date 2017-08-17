@@ -5,8 +5,8 @@ import numpy as np
 
 from datetime import datetime, date, time
 
-NUM_OF_EPOCHS = 1000
-BATCH_SIZE = 10
+NUM_OF_EPOCHS = 2000
+BATCH_SIZE = 1
 LEARNING_RATE = 1e-4
 
 
@@ -77,15 +77,15 @@ def train(num_of_epochs, learn_rate, batch_size):
             if step % 10 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                #if step % 100 == 0:
-                    #print('Saving...')
-                    #saver.save(sess, './model')
-                    #print('Saving complete.')
+                if step % 100 == 0:
+                    print('Saving...')
+                    saver.save(sess, './model')
+                    print('Saving complete.')
 
-            f = open('E:/Study/Mallenom/1.txt', 'w')
-            w = y.eval(feed_dict={x: next_batch(batched_data, 0)[0]})
-            f.write(np.array2string(w, separator=','))
-            f.close()
+            # f = open('E:/Study/Mallenom/1.txt', 'w')
+            # w = y.eval(feed_dict={x: next_batch(batched_data, 0)[0], keep_prob: 1.0})
+            # f.write(np.array2string(w, separator=','))
+            # f.close()
 
         print('Saving...')
         saver.save(sess, './model')

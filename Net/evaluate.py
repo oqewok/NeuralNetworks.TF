@@ -5,7 +5,7 @@ import train
 np.set_printoptions(threshold=np.nan, suppress=True)
 
 print('Data batching...')
-batched_data = train.get_batched_data(train.BATCH_SIZE)
+batched_data = train.get_batched_data(1)
 
 
 with tf.Session() as sess:

@@ -22,7 +22,7 @@ with tf.Session() as sess:
 
     sess.run(tf.global_variables_initializer())
 
-    batch = train.next_batch(batched_data, 9)
+    batch = train.next_batch(batched_data, 0)
 
     f = open('E:/Study/Mallenom/2.txt', 'w')
     w = y.eval(feed_dict={x: batch[0], keep_prob: 1.0})

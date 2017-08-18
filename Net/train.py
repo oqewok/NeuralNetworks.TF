@@ -5,7 +5,7 @@ import numpy as np
 
 from datetime import datetime, date, time
 
-NUM_OF_EPOCHS = 2000
+NUM_OF_EPOCHS = 20000
 BATCH_SIZE = 1
 LEARNING_RATE = 1e-4
 
@@ -62,7 +62,7 @@ def train(num_of_epochs, learn_rate, batch_size):
 
     init = tf.global_variables_initializer()
 
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(max_to_keep=5)
 
     with tf.Session() as sess:
         print('Training...')

@@ -53,7 +53,7 @@ def conv_layers():
     W_conv3 = weight_variable([5, 5, 64, 128], 'W_conv3')
     b_conv3 = bias_variable([128], 'b_conv3')
 
-    h_conv3 = tf.nn.sigmoid(conv2d(h_pool2, W_conv3) + b_conv3, name='h_conv3_relu')
+    h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3, name='h_conv3_relu')
     h_pool3 = max_pool(h_conv3, ksize=(2, 2), stride=(2, 2))
 
     return x, h_pool3  # , [W_conv1, b_conv1,

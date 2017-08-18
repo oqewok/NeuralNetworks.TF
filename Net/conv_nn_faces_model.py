@@ -42,21 +42,28 @@ def conv_layers():
     h_conv1 = tf.nn.relu(conv2d(x, W_conv1) + b_conv1, name='h_conv1_relu')
     h_pool1 = max_pool(h_conv1, ksize=(2, 2), stride=(2, 2))
 
-    # Second layer (conv_5x5, max_pool_1x2). Result: 64x24x64
+    # Second layer (conv_5x5, max_pool_2x2). Result: 32x24x64
     W_conv2 = weight_variable([5, 5, 48, 64], 'W_conv2')
     b_conv2 = bias_variable([64], 'b_conv2')
 
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2, name='h_conv2_relu')
     h_pool2 = max_pool(h_conv2, ksize=(2, 1), stride=(2, 1))
 
-    # Third layer (conv_5x5, max_pool_2x2). Result: 32x12x128
-    W_conv3 = weight_variable([5, 5, 64, 128], 'W_conv3')
+    # Third layer (conv_3x3, max_pool_2x2). Result: 16x12x128
+    W_conv3 = weight_variable([3, 3, 64, 128], 'W_conv3')
     b_conv3 = bias_variable([128], 'b_conv3')
 
     h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3) + b_conv3, name='h_conv3_relu')
     h_pool3 = max_pool(h_conv3, ksize=(2, 2), stride=(2, 2))
 
-    return x, h_pool3  # , [W_conv1, b_conv1,
+    # Fourth layer (conv_3x3, max_pool_2x2). Result: 8x6x256
+    W_conv4 = weight_variable([3, 3, 128, 256], 'W_conv4')
+    b_conv4 = bias_variable([256], 'b_conv4')
+
+    h_conv4 = tf.nn.relu(conv2d(h_pool3, W_conv4) + b_conv4, name='h_conv4_relu')
+    h_pool4 = max_pool(h_conv4, ksize=(2, 2), stride=(2, 2))
+
+    return x, h_pool4  # , [W_conv1, b_conv1,
                        #  W_conv2, b_conv2,
                        #  W_conv3, b_conv3]
 
@@ -65,10 +72,10 @@ def get_training_model():
     x, conv_layer = conv_layers()
 
     # Fully connected layer
-    W_fc1 = weight_variable([32 * 12 * 128, 4096], 'W_fc1')
+    W_fc1 = weight_variable([8 * 6 * 256, 4096], 'W_fc1')
     b_fc1 = bias_variable([4096], 'b_fc1')
 
-    conv_layer_flat = tf.reshape(conv_layer, [-1, 32 * 12 * 128])
+    conv_layer_flat = tf.reshape(conv_layer, [-1, 8 * 6 * 256])
     h_fc1 = tf.nn.sigmoid(tf.matmul(conv_layer_flat, W_fc1) + b_fc1, name='fc1_relu')
 
     # дополнительный параметр keep_prob в системе feed_dict для управления отсевом.

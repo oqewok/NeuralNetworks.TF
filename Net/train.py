@@ -5,7 +5,7 @@ import numpy as np
 
 from datetime import datetime, date, time
 
-NUM_OF_EPOCHS = 1380
+NUM_OF_EPOCHS = 276
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-3
 

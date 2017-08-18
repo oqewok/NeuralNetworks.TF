@@ -47,7 +47,7 @@ def conv_layers():
     b_conv2 = bias_variable([64], 'b_conv2')
 
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2, name='h_conv2_relu')
-    h_pool2 = max_pool(h_conv2, ksize=(2, 1), stride=(2, 1))
+    h_pool2 = max_pool(h_conv2, ksize=(2, 1), stride=(2, 2))
 
     # Third layer (conv_3x3, max_pool_2x2). Result: 16x12x128
     W_conv3 = weight_variable([3, 3, 64, 128], 'W_conv3')

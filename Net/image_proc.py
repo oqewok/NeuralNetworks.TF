@@ -3,12 +3,13 @@ import skimage
 import numpy as np
 from skimage import io
 from skimage import transform
+import conv_nn_faces_model
 from PIL import Image
 
 
-IMG_WIDTH = 128
-IMG_HEIGHT = 96
-PATH = 'E:/data/gt_db/s01/01.jpg'
+IMG_WIDTH = conv_nn_faces_model.IMG_WIDTH
+IMG_HEIGHT = conv_nn_faces_model.IMG_HEIGHT
+PATH = 'E:/Study/Mallenom/test.jpg'
 
 
 def normalize(image):
@@ -16,18 +17,13 @@ def normalize(image):
 
 
 def read(path):
-    # image = io.imread(path)
-    image = Image.open(path)
-    return image
+    image = io.imread(path)
+    return skimage.img_as_float(image)
 
 
 def read_and_normalize(path):
-#    image = transform.resize(read(path), [IMG_HEIGHT, IMG_WIDTH], mode='reflect')
-#   i = np.reshape(image, 480 * 640 * 3)
-    image = Image.open(path)
-    im = image.resize((128, 96))
-    img = np.array(im) / 255
-    return img
+    image = transform.resize(read(path), [IMG_HEIGHT, IMG_WIDTH], mode='reflect')
+    return image
 
 
 def show_image(image):
@@ -45,3 +41,7 @@ def show_image(image):
 #print()
 # n_image = normalize(image)
 # show_image(n_image)
+
+#image = io.imread(PATH)
+#img = transform.resize(image, [480, 640], mode='reflect')
+#io.imsave(PATH, img)

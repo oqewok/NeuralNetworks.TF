@@ -60,11 +60,15 @@ namespace ImageConverter
 				.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
 			var maskCreator = new ImageMaskCreator(16, 16);
-			var mask = maskCreator.FillMasks(new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])));
+			//var mask = maskCreator.FillMasks(new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])));
+			//var mask = maskCreator.FillNegativeMask();
+			var rect = new Rectangle(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1]));
+			var mask = maskCreator.GetPointCoord(rect);
 
+			//var r = maskCreator.GetRectangle(mask);
 			//Рисование изображения
-			var img = maskCreator.DrawMask(mat);
-			img.Rectangle(new Rect(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])), CvColor.Red);
+			//var img = maskCreator.DrawMask(mat);
+			//img.Rectangle(new Rect(int.Parse(lines[0]), int.Parse(lines[1]), int.Parse(lines[2]) - int.Parse(lines[0]), int.Parse(lines[3]) - int.Parse(lines[1])), CvColor.Red);
 			//using(var w = new Window(img))
 			//{
 			//	Cv.WaitKey();

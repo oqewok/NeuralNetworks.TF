@@ -3,7 +3,7 @@ import tensorflow as tf
 IMG_WIDTH = 320
 IMG_HEIGHT = 240
 CHANNELS = 3
-OutputNodesCount = 4
+OutputNodesCount = 8
 
 
 # функция инициализации весов
@@ -61,7 +61,7 @@ def get_training_model():
     b_fc1 = bias_variable([128], 'b_fc1')
 
     conv_layer_flat = tf.reshape(conv_layer, [-1, 10 * 14 * 8])
-    h_fc1 = tf.nn.sigmoid(tf.matmul(conv_layer_flat, W_fc1) + b_fc1, name='sigmoid')
+    h_fc1 = tf.matmul(conv_layer_flat, W_fc1) + b_fc1
 
     # дополнительный параметр keep_prob в системе feed_dict для управления отсевом.
     keep_prob = tf.placeholder(tf.float32, name="keep_prob")
@@ -71,6 +71,6 @@ def get_training_model():
     W_fc2 = weight_variable([128, OutputNodesCount], 'W_fc2')
     b_fc2 = bias_variable([OutputNodesCount], 'b_fc2')
 
-    y = tf.sigmoid(tf.matmul(h_fc1_drop, W_fc2) + b_fc2, name="outputs")
+    y = tf.nn.sigmoid(tf.matmul(h_fc1_drop, W_fc2) + b_fc2, name="outputs")
 
     return x, y, keep_prob  # , [conv_vars, W_fc1, b_fc1, W_fc2, b_fc2]

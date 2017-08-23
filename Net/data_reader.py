@@ -16,7 +16,7 @@ def read_labeled_image_list():
     labels = []
 
     for line in f:
-        filename, label = line[:-1].split(' ')
+        filename, label = line[:-1].split('  ')
         filenames.append(filename)
         labels.append(label)
 
@@ -41,6 +41,7 @@ def read_image(image_file):
     image = image_proc.read_and_normalize(image_file)
     return image
 
+
 # читает из переданных файлов маски изображений и возвращает массив float из этих масок.
 def read_masks(masks_file_list):
     masks = []
@@ -49,7 +50,6 @@ def read_masks(masks_file_list):
         with open(mask_file, 'r') as file:
             data = file.read()
             arr = np.array(data.split(','), float)
-            # arr = tf.convert_to_tensor(arr, dtype=tf.float32)
             masks.append(arr)
 
     return masks

@@ -5,9 +5,9 @@ import numpy as np
 
 from datetime import datetime
 
-NUM_OF_EPOCHS = 1500
-BATCH_SIZE = 10
-LEARNING_RATE = 1e-3
+NUM_OF_EPOCHS = 66790000
+BATCH_SIZE = 1
+LEARNING_RATE = 1e-4
 
 
 # Загружает список изображений и соответствующих им меток
@@ -74,13 +74,13 @@ def train(num_of_epochs, learn_rate, batch_size):
             batch = next_batch(batched_data, step % len(batched_data))
             train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
 
-            if step % 10 == 0:
+            if step % 100 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                #if step % 1000 == 0 and step != 0:
-                #    print('Saving...')
-                #    saver.save(sess, './model')
-                #    print('Saving complete.')
+                if step % 10000 == 0 and step != 0:
+                    print('Saving...')
+                    saver.save(sess, './model')
+                    print('Saving complete.')
 
             # f = open('E:/Study/Mallenom/1.txt', 'w')
             # w = y.eval(feed_dict={x: next_batch(batched_data, 0)[0], keep_prob: 1.0})

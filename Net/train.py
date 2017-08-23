@@ -3,9 +3,9 @@ import data_reader
 import conv_nn_faces_model as model
 import numpy as np
 
-from datetime import datetime, date, time
+from datetime import datetime
 
-NUM_OF_EPOCHS = 276
+NUM_OF_EPOCHS = 1500
 BATCH_SIZE = 10
 LEARNING_RATE = 1e-3
 
@@ -42,7 +42,7 @@ def next_batch(batched_data, batch_index):
 
 def get_loss(y, y_):
     loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
+        tf.nn.sigmoid_cross_entropy_with_logits(labels=y_, logits=y))
     return loss
 
 
@@ -52,7 +52,7 @@ def train(num_of_epochs, learn_rate, batch_size):
     print('Loading model...')
     x, y, keep_prob = model.get_training_model()
 
-    y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='outputs')
+    y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='losses')
 
     loss = get_loss(y, y_)
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
@@ -77,10 +77,10 @@ def train(num_of_epochs, learn_rate, batch_size):
             if step % 10 == 0:
                 print('Step', step, 'of', num_of_epochs)
 
-                if step % 100 == 0 and step != 0:
-                    print('Saving...')
-                    saver.save(sess, './model')
-                    print('Saving complete.')
+                #if step % 1000 == 0 and step != 0:
+                #    print('Saving...')
+                #    saver.save(sess, './model')
+                #    print('Saving complete.')
 
             # f = open('E:/Study/Mallenom/1.txt', 'w')
             # w = y.eval(feed_dict={x: next_batch(batched_data, 0)[0], keep_prob: 1.0})

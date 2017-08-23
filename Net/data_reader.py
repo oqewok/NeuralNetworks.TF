@@ -1,9 +1,9 @@
-import tensorflow as tf
+import conv_nn_faces_model
 import numpy as np
 import image_proc
 
-IMG_WIDTH = 128
-IMG_HEIGHT = 96
+IMG_WIDTH = conv_nn_faces_model.IMG_WIDTH
+IMG_HEIGHT = conv_nn_faces_model.IMG_HEIGHT
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 
@@ -35,6 +35,11 @@ def read_images_from_disk(image_files, masks_file_list):
 
     return [images, masks]
 
+
+# читает изображение из файла
+def read_image(image_file):
+    image = image_proc.read_and_normalize(image_file)
+    return image
 
 # читает из переданных файлов маски изображений и возвращает массив float из этих масок.
 def read_masks(masks_file_list):

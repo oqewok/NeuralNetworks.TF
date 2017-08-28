@@ -19,8 +19,8 @@ def bias_variable(shape, name):
 
 
 # функция свертки
-def conv2d(x, W, stride=(1, 1), padding='SAME'):
-    return tf.nn.conv2d(x, W, strides=[1, stride[0], stride[1], 1],
+def conv2d(x, W, stride=(1, 1), pad_w=1, pad_h=1,padding='SAME'):
+    return tf.nn.conv2d(x, W, strides=[pad_w, stride[0], stride[1], pad_h],
                         padding=padding)
 
 
@@ -41,9 +41,9 @@ def conv_layers():
     h_conv1 = tf.nn.relu(conv2d(x, W_conv1, stride=(2, 2)) + b_conv1, name='h_conv1_relu')
     h_pool1 = max_pool(h_conv1, ksize=(3, 3), stride=(3, 3))
 
-    # Second layer (4 kernels conv_5x5, max_pool_2x2). Result: 10x14x8
-    W_conv2 = weight_variable([5, 5, 1, 8], 'W_conv2')
-    b_conv2 = bias_variable([8], 'b_conv2')
+    # Second layer (4 kernels conv_5x5, max_pool_2x2). Result: 10x14x4
+    W_conv2 = weight_variable([5, 5, 1, 4], 'W_conv2')
+    b_conv2 = bias_variable([4], 'b_conv2')
 
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2, stride=(2, 2)) + b_conv2, name='h_conv2_relu')
     h_pool2 = max_pool(h_conv2, ksize=(2, 2), stride=(2, 2))
@@ -57,10 +57,10 @@ def get_training_model():
     x, conv_layer = conv_layers()
 
     # Fully connected layer
-    W_fc1 = weight_variable([10 * 14 * 8, 128], 'W_fc1')
+    W_fc1 = weight_variable([10 * 14 * 4, 128], 'W_fc1')
     b_fc1 = bias_variable([128], 'b_fc1')
 
-    conv_layer_flat = tf.reshape(conv_layer, [-1, 10 * 14 * 8])
+    conv_layer_flat = tf.reshape(conv_layer, [-1, 10 * 14 * 4])
     h_fc1 = tf.matmul(conv_layer_flat, W_fc1) + b_fc1
 
     # дополнительный параметр keep_prob в системе feed_dict для управления отсевом.

@@ -22,7 +22,7 @@ def read(path):
 
 
 def read_and_normalize(path):
-    image = transform.resize(read(path), [IMG_HEIGHT, IMG_WIDTH], mode='reflect')
+    image = transform.resize(read(path), [IMG_HEIGHT, IMG_WIDTH, 3], mode='reflect')
     return image
 
 

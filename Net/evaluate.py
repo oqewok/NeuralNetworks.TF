@@ -27,7 +27,7 @@ with tf.Session() as sess:
 
     sess.run(tf.global_variables_initializer())
 
-    batch = train.next_batch(batched_data, 20)
+    # batch = train.next_batch(batched_data, 20)
 
     f = open('E:/Study/Mallenom/img.txt', 'w')
     w = y.eval(feed_dict={x: image, keep_prob: 1.0})

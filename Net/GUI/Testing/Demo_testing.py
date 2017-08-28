@@ -14,21 +14,21 @@ from Net.GUI.Testing.mainwindow import Ui_MainWindow as MainWindow
 
 
 # player = QMediaPlayer
-class MainGUIWindow(QMainWindow, MainWindow, QWidget):
+class MainGUIWindow(QMainWindow, MainWindow):
     def __init__(self, parent = None):
         super(MainGUIWindow, self).__init__(parent)
         self.setupUi(self)
 
-        # btn_Quit.OnClick -> Close
+        '''btn_Quit.OnClick -> Close'''
         self.btn_Quit.clicked.connect(self.close_window)
 
-        # btn_OpenFile.OnClick -> Open File Dialog
+        '''btn_OpenFile.OnClick -> Open File Dialog'''
         self.btn_OpenFile.clicked.connect(self.openFile)
 
-        # btn_FrameShowNext -> Pick and show next frame
+        '''btn_FrameShowNext -> Pick and show next frame'''
         self.btn_FrameShowNext.clicked.connect(self.get_next_frame)
 
-        # btn_FrameShowNext -> Pick and show next frame
+        '''btn_FrameShowNext -> Pick and show next frame'''
         self.btn_FrameShowPrevious.clicked.connect(self.get_prev_frame)
 
         '''Set widgetVideo to display content from picked video file'''
@@ -101,6 +101,11 @@ class VideoWidget(QVideoWidget):
 
     def sizeHint(self):
         return QSize(450, 300)
+
+# class Frame(QVideoFrame):
+#     def __init__(self, parent=None):
+#         super(Frame, self).__init__(parent)
+#         pass
 
 def main():
     application = QApplication(sys.argv)

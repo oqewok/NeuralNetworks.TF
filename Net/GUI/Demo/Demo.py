@@ -5,6 +5,7 @@ import PIL
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import random
 
 from Net.GUI.Demo.mainwindow import Ui_MainWindow as MainWindow
 
@@ -69,10 +70,43 @@ class MainForm(QMainWindow, MainWindow):
                 self.update_label_Image(self.imageContainer.dataCopy)
 
                 '''Uncomment to draw example on img loaded'''
-                # painter  = Painter(self.imageContainer.dataCopy, Qt.blue, 10)
-                # painter.paint_line(90, 20, 90, 300)
-                # painter.paint_rectangle(0, 250, 400, 35)
+                # painter  = Painter(self.imageContainer.dataCopy)
+                #
+                # rnd = random.randint(0, 400)
+                # list  = []
+                #
+                # for i in range(1, 1):
+                #     x1 = random.randint(0, 200)
+                #     y1 = random.randint(0, 200)
+                #     width = random.randint(0, 400)
+                #     height = random.randint(0, 400)
+                #     rect = QRect(x1, y1, width, height)
+                #     list.append(rect)
+                #
+                # x1 = 200
+                # y1 = 200
+                # width = 50
+                # height = 50
+                # rect = QRect(x1, y1, width, height)
+                #
+                # list.append(rect)
+                # # painter.paint_rectangles(list)
+                # # painter.paint_rect(rect)
+                # # painter.paint_rectangle(x1, y1, width=width, height=height)
+                #
+                #
+                # b = painter.paint_rectangle(100, 100, -120, 120,  None)
+                #
+                #
+                # if b == False:
+                #     # dlg = WarnDialog()
+                #     # dlg.show()
+                #
+                #     self.showWarn("Warning", "Одна из областей не была нарисована")
+                #     pass
+                #
                 # self.update_label_Image(self.imageContainer.dataCopy)
+                '''block ends'''
 
                 return path
 
@@ -88,6 +122,9 @@ class MainForm(QMainWindow, MainWindow):
 
     def OnRecognizeClick(self):
         pass
+
+    def showWarn(parent, title: str, msg: str):
+        QMessageBox.about(parent, title, msg)
 
 
 class Frame():
@@ -131,12 +168,49 @@ class Painter():
         self.pen = QPen(Qt.red, 3)
         self.painter.setPen(self.pen)
 
-    def paint_line(self, x1, y1, x2, y2):
+    '''Paint line from (x1;x2) to (y1;y2)'''
+
+    def paint_line(self, x1, y1, x2, y2) -> bool:
         self.painter.drawLine(x1, y1, x2, y2)
+        return True
         pass
 
-    def paint_rectangle(self, x1, y1, width, height):
+    '''Paint rectangle (x1; x1) (width; height)'''
+
+    def paint_rectangle(self, x1: int, y1: int, width: int, height: int) -> bool:
         self.painter.drawRect(x1, y1, width, height)
+        return True
+        pass
+
+    '''Paint rectangle (x1; y1) (x2; y2)'''
+
+    def paint_rectangle(self, x1, y1, x2, y2, _=None) -> bool:
+        if (_ is None):
+            if (x1 > 0 and x2 > 0 and y1 > 0 and y2 > 0):
+                if (x2 > x1 and y2 > y1):
+                    rect = QRect(x1, y1, x2 - x1, y2 - y1)
+                    self.painter.drawRect(rect)
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+
+    '''Paint QRect'''
+
+    def paint_rect(self, rect: QRect) -> bool:
+        self.painter.drawRect(rect)
+        return True
+        pass
+
+    '''Paint a list of QRect'''
+
+    def paint_rectangles(self, list: []):
+        if (list is not None):
+            for rect in list:
+                self.paint_rect(rect)
         pass
 
 

@@ -22,7 +22,7 @@ with tf.Session() as sess:
     graph = tf.get_default_graph()
     x = graph.get_tensor_by_name('inputs:0')
     y = graph.get_tensor_by_name('outputs:0')
-    keep_prob = graph.get_tensor_by_name('keep_prob:0')
+    keep_prob = graph.get_tensor_by_name('fc1_dropout:0')
     train_step = graph.get_operation_by_name('Adam')
 
     sess.run(tf.global_variables_initializer())

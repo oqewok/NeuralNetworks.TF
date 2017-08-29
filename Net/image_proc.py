@@ -3,12 +3,12 @@ import skimage
 import numpy as np
 from skimage import io
 from skimage import transform
-import conv_nn_faces_model
+import conv_nn_plates
 from PIL import Image
 
 
-IMG_WIDTH = conv_nn_faces_model.IMG_WIDTH
-IMG_HEIGHT = conv_nn_faces_model.IMG_HEIGHT
+IMG_WIDTH = conv_nn_plates.IMG_WIDTH
+IMG_HEIGHT = conv_nn_plates.IMG_HEIGHT
 PATH = 'E:/Study/Mallenom/test.jpg'
 
 

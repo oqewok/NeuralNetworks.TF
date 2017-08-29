@@ -1,6 +1,6 @@
 import tensorflow as tf
 import data_reader
-import conv_nn_faces_model as model
+import conv_nn_plates as model
 import numpy as np
 
 from datetime import datetime
@@ -64,24 +64,25 @@ def bb_intersection_over_union(boxA, boxB):
     return iou
 
 
-def get_loss(y, y_):
-    # loss = tf.reduce_mean(
-    #     tf.nn.sigmoid_cross_entropy_with_logits(labels=y_, logits=y))
-    loss = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
+def get_loss(y, y_, l2_loss):
+    loss = tf.reduce_mean(
+        tf.nn.sigmoid_cross_entropy_with_logits(labels=y_, logits=y))
+
+    # loss = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
     # loss = tf.reduce_mean(
     #     tf.nn.sigmoid_cross_entropy_with_logits(logits=y[:, :1], labels=y_[:, :1]))
-    return loss
+    return loss + l2_loss
 
 
 def train(num_of_epochs, learn_rate, batch_size):
     np.set_printoptions(threshold=np.nan, suppress=True)
 
     print('Loading model...')
-    x, y, keep_prob = model.get_training_model()
+    x, y, fc1_dropout_prob, conv_dropout_prob, l2_loss = model.get_training_model()
 
     y_ = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='losses')
 
-    loss = get_loss(y, y_)
+    loss = get_loss(y, y_, l2_loss)
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
 
     print('Data batching...')
@@ -100,7 +101,7 @@ def train(num_of_epochs, learn_rate, batch_size):
         for step in range(num_of_epochs + 1):
             batch = next_batch(batched_data, step % len(batched_data[0]))
             try:
-                train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+                train_step.run(feed_dict={x: batch[0], y_: batch[1], fc1_dropout_prob: 0.5})
             except ValueError:
                 print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 

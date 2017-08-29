@@ -1,9 +1,9 @@
-import conv_nn_faces_model
+import conv_nn_plates
 import numpy as np
 import image_proc
 
-IMG_WIDTH = conv_nn_faces_model.IMG_WIDTH
-IMG_HEIGHT = conv_nn_faces_model.IMG_HEIGHT
+IMG_WIDTH = conv_nn_plates.IMG_WIDTH
+IMG_HEIGHT = conv_nn_plates.IMG_HEIGHT
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 

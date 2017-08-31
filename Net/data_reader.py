@@ -10,8 +10,8 @@ TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 
 # читает .txt файл, в котором в каждой строке через пробел отделены путь к файлу с изображением и путь к разметке
 # изображения.
-def read_labeled_image_list():
-    f = open(TRAIN_FILE_PATH, 'r')
+def read_labeled_image_list(path):
+    f = open(path, 'r')
     filenames = []
     labels = []
 

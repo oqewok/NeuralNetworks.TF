@@ -57,9 +57,12 @@ weights = {
         [conv_kernels['h_conv5']['size'][0], conv_kernels['h_conv5']['size'][1], n_hidden_4, n_hidden_5], 'W_conv2'),
     'h6': weight_variable(
         [conv_kernels['h_conv6']['size'][0], conv_kernels['h_conv6']['size'][1], n_hidden_5, n_hidden_6], 'W_conv6'),
-    'fc1': weight_variable([1 * 1 * n_hidden_6, n_fc_1], 'W_fc1'),
-    'fc2': weight_variable([n_fc_1, n_fc_2], 'W_fc2'),
-    'softmax': weight_variable([n_fc_2, OutputClasses], 'W_fc2'),
+    'W_fc1_c': weight_variable([1 * 1 * n_hidden_6, n_fc_1], 'W_fc1_c'),
+    'W_fc2_c': weight_variable([n_fc_1, n_fc_2], 'W_fc2_c'),
+    'W_fc1_r': weight_variable([1 * 1 * n_hidden_6, n_fc_1], 'W_fc1_r'),
+    'W_fc2_r': weight_variable([n_fc_1, n_fc_2], 'W_fc2_r'),
+    'softmax': weight_variable([n_fc_2, OutputClasses], 'W_softmax'),
+    'W_l2_loss': weight_variable([n_fc_2, OutputNodesCount], 'W_l2_loss'),
 }
 
 biases = {
@@ -69,9 +72,12 @@ biases = {
     'b_conv4': bias_variable([n_hidden_4], 'b_conv4'),
     'b_conv5': bias_variable([n_hidden_5], 'b_conv5'),
     'b_conv6': bias_variable([n_hidden_6], 'b_conv6'),
-    'b_fc1': bias_variable([n_fc_1], 'b_conv1'),
-    'b_fc2': bias_variable([n_fc_2], 'b_conv2'),
-    'softmax': bias_variable([OutputClasses], 'b_fc2'),
+    'b_fc1_c': bias_variable([n_fc_1], 'b_fc1_c'),
+    'b_fc2_c': bias_variable([n_fc_2], 'b_fc2_c'),
+    'b_fc1_r': bias_variable([n_fc_1], 'b_fc1_r'),
+    'b_fc2_r': bias_variable([n_fc_2], 'b_fc2_r'),
+    'softmax_b': bias_variable([OutputClasses], 'softmax_b'),
+    'b_l2_loss': bias_variable([OutputNodesCount], 'b_l2_loss'),
 }
 
 
@@ -150,32 +156,65 @@ def conv_layers():
     #  W_conv3, b_conv3]
 
 
-def get_training_model():
+def get_classification_model():
+    x, conv_layer = conv_layers()
+
+    # Fully connected layer 1
+    W_fc1 = weights['W_fc1_c']
+    b_fc1 = biases['b_fc1_c']
+
+    conv_layer_flat = tf.reshape(conv_layer, [-1, 1 * 1 * n_hidden_6])
+    h_fc1 = tf.add(tf.matmul(conv_layer_flat, W_fc1, name='fc1_c'), b_fc1, name='fc1_c_b')
+
+    # Dropout layer.
+    fc1_c_dropout_prob = tf.placeholder(tf.float32, name="fc1_c_dropout")
+    h_fc1_c_drop = tf.nn.dropout(h_fc1, fc1_c_dropout_prob)
+
+    # Fully connected layer 2
+    W_fc2 = weights['W_fc2_c']
+    b_fc2 = biases['b_fc2_c']
+
+    h_fc2 = tf.add(tf.matmul(h_fc1_c_drop, W_fc2, name='fc2_c'), b_fc2, name="fc2_c_b")
+
+    # Softmax layer
+    W_softmax = weights['softmax']
+    b_softmax = biases['softmax_b']
+
+    y = tf.nn.softmax(tf.add(tf.matmul(h_fc2, W_softmax, name='softmax'), b_softmax, name="softmax_b"), name="outputs")
+    return x, y, fc1_c_dropout_prob,
+
+
+def get_regression_model():
     x, conv_layer = conv_layers()
 
     # TODO: прочитать про SGD, как обучить корректировать координаты рамок.
     # Fully connected layer 1
-    W_fc1 = weights['fc1']
-    b_fc1 = biases['b_fc1']
+    W_fc1 = weights['W_fc1_r']
+    b_fc1 = biases['b_fc1_r']
 
     conv_layer_flat = tf.reshape(conv_layer, [-1, 1 * 1 * n_hidden_6])
-    h_fc1 = tf.add(tf.matmul(conv_layer_flat, W_fc1, name='fc1'), b_fc1, name='fc1_b')
+    h_fc1 = tf.add(tf.matmul(conv_layer_flat, W_fc1, name='fc1_r'), b_fc1, name='fc1_r_b')
 
     # Dropout layer.
-    fc1_dropout_prob = tf.placeholder(tf.float32, name="fc1_dropout")
-    h_fc1_drop = tf.nn.dropout(h_fc1, fc1_dropout_prob)
+    fc1_r_dropout_prob = tf.placeholder(tf.float32, name="fc1_r_dropout")
+    h_fc1_r_drop = tf.nn.dropout(h_fc1, fc1_r_dropout_prob)
 
     # Fully connected layer 2
-    W_fc2 = weights['fc2']
-    b_fc2 = biases['b_fc2']
+    W_fc2 = weights['W_fc2_r']
+    b_fc2 = biases['b_fc2_r']
 
-    h_fc2 = tf.add(tf.matmul(h_fc1_drop, W_fc2, name='fc2'), b_fc2, name="fc2_b")
+    h_fc2 = tf.add(tf.matmul(h_fc1_r_drop, W_fc2, name='fc2'), b_fc2, name="fc2_b")
 
-    # Softmax layer
-    W_softmax = weights['softmax']
-    b_softmax = biases['softmax']
+    W_l2_loss = weights['W_l2_loss']
+    b_l2_loss = biases['b_l2_loss']
 
-    y = tf.nn.softmax(tf.add(tf.matmul(h_fc2, W_softmax, name='softmax'), b_softmax, name="softmax_b"), name="outputs")
+    y = tf.add(tf.matmul(h_fc2, W_l2_loss, name='W_l2_loss'), b_l2_loss, name="bboxes_result")
 
-    # l2_loss = tf.nn.l2_loss(y)
-    return x, y, fc1_dropout_prob,  # l2_loss  # , [conv_vars, W_fc1, b_fc1, W_fc2, b_fc2]
+    return x, y, fc1_r_dropout_prob
+
+
+def get_training_model():
+    x, classification_res, fc1_dropout = get_classification_model()
+    regression_res = get_regression_model()
+
+    return x, classification_res, fc1_dropout, regression_res

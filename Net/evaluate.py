@@ -1,14 +1,14 @@
 import tensorflow as tf
 import numpy as np
 import data_reader as reader
-import train
+import train_classification
 
 PATH = 'E:/Study/Mallenom/test.jpg'
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 
 print('Data batching...')
-batched_data = train.get_batched_data(1)
+batched_data = train_classification.get_batched_data(1)
 
 img = reader.read_image(PATH)
 image = [img]

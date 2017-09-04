@@ -1,12 +1,12 @@
 import tensorflow as tf
 import data_reader
-import conv_nn_plates as model
+import conv_nn_plates_light as model
 import numpy as np
 
 from datetime import datetime
 
-NUM_OF_EPOCHS = 100
-BATCH_SIZE = 100
+NUM_OF_EPOCHS = 20
+BATCH_SIZE = 5
 LEARNING_RATE = 1e-4
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train_classificator.txt'
@@ -84,11 +84,18 @@ def train(num_of_epochs, learn_rate, batch_size):
                 print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 
             if step % image_count == 0:
-                print('Epoch', step / image_count + 1, 'of', num_of_epochs)
+                print('Epoch', int(step / image_count + 1), 'of', num_of_epochs)
                 if step != 0:
                     print('Saving...')
                     saver.save(sess, './classification-model')
                     print('Saving complete.')
+            else:
+                if step % 100 == 0 and step != 0:
+                    print('Step', step, 'of', iters_count)
+                    if step % 1000 == 0:
+                        print('Saving...')
+                        saver.save(sess, './classification-model')
+                        print('Saving complete.')
 
         print('Saving...')
         saver.save(sess, './classification-model')

@@ -2,6 +2,7 @@ import tensorflow as tf
 import data_reader
 import conv_nn_plates_light as model
 import numpy as np
+import random
 
 from datetime import datetime
 
@@ -14,22 +15,27 @@ TRAIN_FILE_PATH = 'E:/Study/Mallenom/train_classificator.txt'
 
 # Загружает список изображений и соответствующих им меток
 def load_full_image_list(filename):
-    names, labels = data_reader.read_labeled_image_list(filename)
-    return names, labels
+    filename_queue = data_reader.read_labeled_image_list(filename)
+    return filename_queue
 
 
 # Загрузка самих изображений и меток из файлов
-def load_train_data(names, labels):
+def load_train_data(image_files, labels_files):
     # здесь берем порциями данные
-    data = data_reader.read_images_from_disk(names, labels)
+    data = data_reader.read_images_from_disk(image_files, labels_files)
     return data
 
 
 # Загружает список изображений и меток и дробит данные на равные части.
-def get_batched_data(batch_size):
-    names, labels = load_full_image_list(TRAIN_FILE_PATH)
-    batched_img = [names[i:i + batch_size] for i in range(0, len(names), batch_size)]
-    batched_masks = [labels[i:i + batch_size] for i in range(0, len(labels), batch_size)]
+def get_batched_data(filename_queue, batch_size):
+    images = list(filename_queue.keys())
+
+    random.shuffle(images)
+
+    labels = [filename_queue[image] for image in images]
+
+    batched_img = [images[i:i + batch_size] for i in range(0, len(filename_queue), batch_size)]
+    batched_masks = [labels[i:i + batch_size] for i in range(0, len(filename_queue), batch_size)]
     return [batched_img, batched_masks]
 
 
@@ -61,7 +67,8 @@ def train(num_of_epochs, learn_rate, batch_size):
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
 
     print('Data batching...')
-    batched_data = get_batched_data(batch_size)
+
+    filename_queue = load_full_image_list(TRAIN_FILE_PATH)
 
     init = tf.global_variables_initializer()
 
@@ -73,29 +80,32 @@ def train(num_of_epochs, learn_rate, batch_size):
 
         print('Start time is', datetime.today())
 
-        image_count = len(batched_data[0]) * batch_size
-        iters_count = image_count * num_of_epochs + 1
+        image_count = len(filename_queue)
+        iters_count = image_count * num_of_epochs
 
-        for step in range(iters_count):
-            batch = next_batch(batched_data, step % len(batched_data[0]))
-            try:
-                train_step.run(feed_dict={x: batch[0], y_: batch[1], fc1_dropout_prob: 0.5})
-            except ValueError:
-                print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
+        for epoch in range(0, num_of_epochs):
+            batched_data = get_batched_data(filename_queue, batch_size)
+            
+            for step in range(0, image_count):
+                batch = next_batch(batched_data, step % len(batched_data[0]))
+                try:
+                    train_step.run(feed_dict={x: batch[0], y_: batch[1], fc1_dropout_prob: 0.5})
+                except ValueError:
+                    print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 
-            if step % image_count == 0:
-                print('Epoch', int(step / image_count + 1), 'of', num_of_epochs)
-                if step != 0:
-                    print('Saving...')
-                    saver.save(sess, './classification-model')
-                    print('Saving complete.')
-            else:
-                if step % 100 == 0 and step != 0:
-                    print('Step', step, 'of', iters_count)
-                    if step % 1000 == 0:
+                if step % image_count == 0:
+                    print('Epoch', int(step / image_count + 1), 'of', num_of_epochs)
+                    if step != 0:
                         print('Saving...')
                         saver.save(sess, './classification-model')
                         print('Saving complete.')
+                else:
+                    if step % 100 == 0 and step != 0:
+                        print('Step', step, 'of', iters_count)
+                        if step % 1000 == 0:
+                            print('Saving...')
+                            saver.save(sess, './classification-model')
+                            print('Saving complete.')
 
         print('Saving...')
         saver.save(sess, './classification-model')

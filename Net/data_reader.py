@@ -12,16 +12,14 @@ TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 # изображения.
 def read_labeled_image_list(path):
     f = open(path, 'r')
-    filenames = []
-    labels = []
+    filename_queue = {}
 
     for line in f:
         filename, label = line[:-1].split('  ')
-        filenames.append(filename)
-        labels.append(label)
+        filename_queue.update({filename: label})
 
     f.close()
-    return filenames, labels
+    return filename_queue
 
 
 # читает изображения и их маски из файлов

@@ -7,8 +7,8 @@ import random
 from datetime import datetime
 
 NUM_OF_EPOCHS = 20
-BATCH_SIZE = 5
-LEARNING_RATE = 1e-4
+BATCH_SIZE = 100
+LEARNING_RATE = 1e-3
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train_classificator.txt'
 
@@ -48,9 +48,9 @@ def next_batch(batched_data, batch_index):
     return [images, masks]
 
 
-def get_loss(y, y_):
-    loss = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
+def get_loss(prediction, y):
+    loss = 7 * tf.reduce_sum(
+        tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=prediction))
 
     return loss
 
@@ -59,12 +59,12 @@ def train(num_of_epochs, learn_rate, batch_size):
     np.set_printoptions(threshold=np.nan, suppress=True)
 
     print('Loading model...')
-    x, y, fc1_dropout_prob = model.get_classification_model()
+    x, prediction, fc1_dropout_prob = model.get_classification_model()
 
-    y_ = tf.placeholder(tf.float32, [None, model.OutputClasses], name='losses')
+    y = tf.placeholder(tf.float32, [None, model.OutputClasses], name='losses')
 
-    loss = get_loss(y, y_)
-    train_step = tf.train.AdamOptimizer(learn_rate).minimize(loss)
+    loss = get_loss(prediction, y)
+    optimizer = tf.train.AdamOptimizer(learn_rate).minimize(loss)
 
     print('Data batching...')
 
@@ -81,31 +81,32 @@ def train(num_of_epochs, learn_rate, batch_size):
         print('Start time is', datetime.today())
 
         image_count = len(filename_queue)
-        iters_count = image_count * num_of_epochs
+        epoch_loss = 0.0
 
         for epoch in range(0, num_of_epochs):
+            print('Epoch', int(epoch + 1), 'of', num_of_epochs, 'loss:', epoch_loss)
+            if epoch != 0:
+                print('Saving...')
+                saver.save(sess, './classification-model')
+                print('Saving complete.')
+
+            epoch_loss = 0.0
             batched_data = get_batched_data(filename_queue, batch_size)
-            
+
             for step in range(0, image_count):
                 batch = next_batch(batched_data, step % len(batched_data[0]))
                 try:
-                    train_step.run(feed_dict={x: batch[0], y_: batch[1], fc1_dropout_prob: 0.5})
+                    _, c = sess.run([optimizer, loss], feed_dict={x: batch[0], y: batch[1], fc1_dropout_prob: 0.5})
+                    epoch_loss += c
                 except ValueError:
                     print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 
-                if step % image_count == 0:
-                    print('Epoch', int(step / image_count + 1), 'of', num_of_epochs)
-                    if step != 0:
+                if step % 100 == 0 and step != 0:
+                    print('Step', step, 'of', image_count)
+                    if step % 1000 == 0:
                         print('Saving...')
                         saver.save(sess, './classification-model')
                         print('Saving complete.')
-                else:
-                    if step % 100 == 0 and step != 0:
-                        print('Step', step, 'of', iters_count)
-                        if step % 1000 == 0:
-                            print('Saving...')
-                            saver.save(sess, './classification-model')
-                            print('Saving complete.')
 
         print('Saving...')
         saver.save(sess, './classification-model')

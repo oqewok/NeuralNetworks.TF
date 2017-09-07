@@ -3,7 +3,7 @@ import numpy as np
 import data_reader as reader
 import train_classification
 
-PATH = 'E:/Study/Mallenom/test.jpg'
+PATH = 'E:/Study/Mallenom/test.png'
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 
@@ -33,6 +33,7 @@ with tf.Session() as sess:
     print('Evaluating...')
 
     w = y.eval(feed_dict={x: image, keep_prob: 1.0})
+    print(w)
     f.write(np.array2string(w, separator=','))
     f.close()
     print()

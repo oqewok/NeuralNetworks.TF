@@ -3,12 +3,12 @@ import skimage
 import numpy as np
 from skimage import io
 from skimage import transform
-import conv_nn_faces_model
+import conv_nn_plates_light
 from PIL import Image
 
 
-IMG_WIDTH = conv_nn_faces_model.IMG_WIDTH
-IMG_HEIGHT = conv_nn_faces_model.IMG_HEIGHT
+IMG_WIDTH = conv_nn_plates_light.IMG_WIDTH
+IMG_HEIGHT = conv_nn_plates_light.IMG_HEIGHT
 PATH = 'E:/Study/Mallenom/test.jpg'
 
 
@@ -22,7 +22,7 @@ def read(path):
 
 
 def read_and_normalize(path):
-    image = transform.resize(read(path), [IMG_HEIGHT, IMG_WIDTH], mode='reflect')
+    image = transform.resize(read(path), [IMG_HEIGHT, IMG_WIDTH, 3], mode='reflect')
     return image
 
 

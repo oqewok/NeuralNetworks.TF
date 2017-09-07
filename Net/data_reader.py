@@ -1,27 +1,26 @@
-import conv_nn_faces_model
+import conv_nn_plates
 import numpy as np
 import image_proc
 
-IMG_WIDTH = conv_nn_faces_model.IMG_WIDTH
-IMG_HEIGHT = conv_nn_faces_model.IMG_HEIGHT
+#IMG_WIDTH = conv_nn_plates.IMG_WIDTH
+#IMG_HEIGHT = conv_nn_plates.IMG_HEIGHT
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 
 
 # читает .txt файл, в котором в каждой строке через пробел отделены путь к файлу с изображением и путь к разметке
 # изображения.
-def read_labeled_image_list():
-    f = open(TRAIN_FILE_PATH, 'r')
-    filenames = []
-    labels = []
+def read_labeled_image_list(path):
+    f = open(path, 'r')
+    filename_queue = {}
 
     for line in f:
-        filename, label = line[:-1].split(' ')
-        filenames.append(filename)
-        labels.append(label)
+        filename, label = line[:-1].split('  ')
+        filename_queue.update({filename: label})
 
     f.close()
-    return filenames, labels
+    return filename_queue
+
 
 
 # читает изображения и их маски из файлов
@@ -41,6 +40,7 @@ def read_image(image_file):
     image = image_proc.read_and_normalize(image_file)
     return image
 
+
 # читает из переданных файлов маски изображений и возвращает массив float из этих масок.
 def read_masks(masks_file_list):
     masks = []
@@ -49,7 +49,6 @@ def read_masks(masks_file_list):
         with open(mask_file, 'r') as file:
             data = file.read()
             arr = np.array(data.split(','), float)
-            # arr = tf.convert_to_tensor(arr, dtype=tf.float32)
             masks.append(arr)
 
     return masks

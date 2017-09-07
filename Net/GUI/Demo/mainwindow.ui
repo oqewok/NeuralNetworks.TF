@@ -25,6 +25,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="btn_LoadModelMeta">
+        <property name="text">
+         <string>Загрузить модель</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="btn_Quit">
         <property name="text">
          <string>Выйти</string>

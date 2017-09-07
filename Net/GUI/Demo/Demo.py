@@ -7,7 +7,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import random
 
-from Net.GUI.Demo.mainwindow import Ui_MainWindow as MainWindow
+from mainwindow import Ui_MainWindow as MainWindow
 
 
 class MainForm(QMainWindow, MainWindow):
@@ -19,9 +19,13 @@ class MainForm(QMainWindow, MainWindow):
         self.btn_Quit.clicked.connect(self.OnCloseWindowClick)
 
         '''btn_OpenFile -> Open File Dlg'''
-        self.btn_OpenFile.clicked.connect(self.OnLoadWithFileDialogClick)
+        self.btn_OpenFile.clicked.connect(self.OnLoadImageClick)
 
+        '''btn_FrameRecognize -> Reconize with tf model'''
         self.btn_FrameRecognize.clicked.connect(self.OnRecognizeClick)
+
+        '''btn_LoadModelMeta - > Load Model's .meta'''
+        self.btn_LoadModelMeta.clicked.connect(self.OnLoadModelMetaClick)
 
         '''Create instance to store loaded img'''
         self.imageContainer = Frame()
@@ -49,7 +53,7 @@ class MainForm(QMainWindow, MainWindow):
 
     '''Загрузить изображение'''
 
-    def OnLoadWithFileDialogClick(self):
+    def OnLoadImageClick(self):
         try:
             file_name, _ = QFileDialog.getOpenFileName(self, "Выберите файл")
             file_info = QFileInfo(file_name)
@@ -118,10 +122,17 @@ class MainForm(QMainWindow, MainWindow):
             return
         pass
 
+    '''Загрузить .meta и восстановить tf-сессию'''
+
+    def OnLoadModelMetaClick(self):
+        pass
+
     '''Stub method'''
 
     def OnRecognizeClick(self):
         pass
+
+    '''Can be called to show an info'''
 
     def showWarn(parent, title: str, msg: str):
         QMessageBox.about(parent, title, msg)

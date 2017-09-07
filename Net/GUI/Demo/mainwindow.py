@@ -21,6 +21,9 @@ class Ui_MainWindow(object):
         self.btn_OpenFile = QtWidgets.QPushButton(self.centralwidget)
         self.btn_OpenFile.setObjectName("btn_OpenFile")
         self.verticalLayout_OpenClose.addWidget(self.btn_OpenFile)
+        self.btn_LoadModelMeta = QtWidgets.QPushButton(self.centralwidget)
+        self.btn_LoadModelMeta.setObjectName("btn_LoadModelMeta")
+        self.verticalLayout_OpenClose.addWidget(self.btn_LoadModelMeta)
         self.btn_Quit = QtWidgets.QPushButton(self.centralwidget)
         self.btn_Quit.setObjectName("btn_Quit")
         self.verticalLayout_OpenClose.addWidget(self.btn_Quit)
@@ -65,6 +68,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Demo"))
         self.btn_OpenFile.setText(_translate("MainWindow", "Открыть"))
+        self.btn_LoadModelMeta.setText(_translate("MainWindow", "Загрузить модель"))
         self.btn_Quit.setText(_translate("MainWindow", "Выйти"))
         self.btn_FrameShowPrevious.setText(_translate("MainWindow", "<<"))
         self.btn_FrameRecognize.setText(_translate("MainWindow", "Обнаружить"))

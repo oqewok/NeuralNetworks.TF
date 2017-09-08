@@ -7,10 +7,10 @@ import random
 from datetime import datetime
 
 NUM_OF_EPOCHS = 20
-BATCH_SIZE = 100
+BATCH_SIZE = 20
 LEARNING_RATE = 1e-3
 
-TRAIN_FILE_PATH = 'E:/Study/Mallenom/train_classificator.txt'
+TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 
 
 # Загружает список изображений и соответствующих им меток
@@ -49,8 +49,7 @@ def next_batch(batched_data, batch_index):
 
 
 def get_loss(prediction, y):
-    loss = 7 * tf.reduce_sum(
-        tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=prediction))
+    loss = tf.losses.mean_squared_error(labels=y, predictions=prediction)
 
     return loss
 
@@ -59,9 +58,9 @@ def train(num_of_epochs, learn_rate, batch_size):
     np.set_printoptions(threshold=np.nan, suppress=True)
 
     print('Loading model...')
-    x, prediction, fc1_dropout_prob = model.get_classification_model()
+    x, prediction = model.get_classification_model()
 
-    y = tf.placeholder(tf.float32, [None, model.OutputClasses], name='losses')
+    y = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='losses')
 
     loss = get_loss(prediction, y)
     optimizer = tf.train.AdamOptimizer(learn_rate).minimize(loss)
@@ -96,8 +95,9 @@ def train(num_of_epochs, learn_rate, batch_size):
             for step in range(0, image_count):
                 batch = next_batch(batched_data, step % len(batched_data[0]))
                 try:
-                    _, c = sess.run([optimizer, loss], feed_dict={x: batch[0], y: batch[1], fc1_dropout_prob: 0.5})
-                    epoch_loss += c
+                    _, c = sess.run([optimizer, loss], feed_dict={x: batch[0], y: batch[1]})
+                    if c > epoch_loss:
+                        epoch_loss = c
                 except ValueError:
                     print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 

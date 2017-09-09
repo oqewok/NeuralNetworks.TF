@@ -48,7 +48,7 @@ weights = {
         [conv_kernels['h_conv3']['size'][0], conv_kernels['h_conv3']['size'][1], n_hidden_2, n_hidden_3], 'W_conv3'),
     'W_fc1_c': weight_variable([16 * 8 * n_hidden_3, n_fc_1], 'W_fc1_c'),
     'W_fc2_c': weight_variable([n_fc_1, n_fc_2], 'W_fc2_c'),
-    'softmax': weight_variable([n_fc_2, OutputNodesCount], 'W_softmax'),
+    'out': weight_variable([n_fc_2, OutputNodesCount], 'W_out'),
 }
 
 biases = {
@@ -57,7 +57,7 @@ biases = {
     'b_conv3': bias_variable([n_hidden_3], 'b_conv3'),
     'b_fc1_c': bias_variable([n_fc_1], 'b_fc1_c'),
     'b_fc2_c': bias_variable([n_fc_2], 'b_fc2_c'),
-    'softmax_b': bias_variable([OutputNodesCount], 'softmax_b'),
+    'out_b': bias_variable([OutputNodesCount], 'out_b'),
 }
 
 
@@ -129,9 +129,9 @@ def get_classification_model():
     h_fc2 = tf.nn.relu(
         tf.add(tf.matmul(h_fc1, W_fc2, name='fc2_c'), b_fc2, name='fc2_c_b'), name='fc2_relu')
 
-    # softmax layer
-    W_softmax = weights['softmax']
-    b_softmax = biases['softmax_b']
+    # out layer
+    W_out = weights['out']
+    b_out = biases['out_b']
 
-    y = tf.add(tf.matmul(h_fc2, W_softmax, name='softmax'), b_softmax, name="softmax_b")
+    y = tf.add(tf.matmul(h_fc2, W_out, name='out_mul'), b_out, name="outputs")
     return x, y,  #fc1_c_dropout_prob,

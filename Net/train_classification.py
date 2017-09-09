@@ -6,7 +6,7 @@ import random
 
 from datetime import datetime
 
-NUM_OF_EPOCHS = 20
+NUM_OF_EPOCHS = 30
 BATCH_SIZE = 20
 LEARNING_RATE = 1e-3
 
@@ -49,7 +49,7 @@ def next_batch(batched_data, batch_index):
 
 
 def get_loss(prediction, y):
-    loss = tf.losses.mean_squared_error(labels=y, predictions=prediction)
+    loss = tf.sqrt(tf.nn.l2_loss(y - prediction))
 
     return loss
 
@@ -79,20 +79,22 @@ def train(num_of_epochs, learn_rate, batch_size):
 
         print('Start time is', datetime.today())
 
-        image_count = len(filename_queue)
         epoch_loss = 0.0
 
         for epoch in range(0, num_of_epochs):
             print('Epoch', int(epoch + 1), 'of', num_of_epochs, 'loss:', epoch_loss)
             if epoch != 0:
                 print('Saving...')
-                saver.save(sess, './classification-model')
+                saver.save(sess, './model')
                 print('Saving complete.')
-
+            if epoch == 10:
+                learn_rate = 0.0001
+            if epoch == 20:
+                learn_rate = 0.00001
             epoch_loss = 0.0
             batched_data = get_batched_data(filename_queue, batch_size)
 
-            for step in range(0, image_count):
+            for step in range(0, len(batched_data[0])):
                 batch = next_batch(batched_data, step % len(batched_data[0]))
                 try:
                     _, c = sess.run([optimizer, loss], feed_dict={x: batch[0], y: batch[1]})
@@ -101,15 +103,11 @@ def train(num_of_epochs, learn_rate, batch_size):
                 except ValueError:
                     print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 
-                if step % 100 == 0 and step != 0:
-                    print('Step', step, 'of', image_count)
-                    if step % 1000 == 0:
-                        print('Saving...')
-                        saver.save(sess, './classification-model')
-                        print('Saving complete.')
+                if step % batch_size == 0 and step != 0:
+                    print('Step', step, 'of', len(batched_data[0]))
 
         print('Saving...')
-        saver.save(sess, './classification-model')
+        saver.save(sess, './model')
         print('Saving complete.')
 
     print('End time is', datetime.today())

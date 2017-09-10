@@ -22,7 +22,6 @@ def read_labeled_image_list(path):
     return filename_queue
 
 
-
 # читает изображения и их маски из файлов
 def read_images_from_disk(image_files, masks_file_list):
     masks = read_masks(masks_file_list)
@@ -50,6 +49,7 @@ def read_masks(masks_file_list):
             data = file.read()
             arr = np.array(data.split(','), float)
             masks.append(arr)
+            file.close()
 
     return masks
 

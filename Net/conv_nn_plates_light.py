@@ -1,22 +1,21 @@
 import tensorflow as tf
 
 IMG_WIDTH = 128
-IMG_HEIGHT = 64
-CHANNELS = 3
+IMG_HEIGHT = 96
+CHANNELS = 1
 OutputClasses = 2
 OutputNodesCount = 4
-
 
 n_hidden_1 = 32  # 1st layer number of features
 n_hidden_2 = 64  # 2nd layer number of features
 n_hidden_3 = 128
 
-n_fc_1 = 500
+n_fc_1 = 1000
 n_fc_2 = 500
 
 conv_kernels = {
-    'h_conv1': {'size': (1, 1), 'stride': (1, 1)},
-    'h_conv2': {'size': (1, 1), 'stride': (1, 1)},
+    'h_conv1': {'size': (5, 5), 'stride': (1, 1)},
+    'h_conv2': {'size': (3, 3), 'stride': (1, 1)},
     'h_conv3': {'size': (1, 1), 'stride': (1, 1)},
 }
 
@@ -46,7 +45,7 @@ weights = {
         [conv_kernels['h_conv2']['size'][0], conv_kernels['h_conv2']['size'][1], n_hidden_1, n_hidden_2], 'W_conv2'),
     'h3': weight_variable(
         [conv_kernels['h_conv3']['size'][0], conv_kernels['h_conv3']['size'][1], n_hidden_2, n_hidden_3], 'W_conv3'),
-    'W_fc1_c': weight_variable([16 * 8 * n_hidden_3, n_fc_1], 'W_fc1_c'),
+    'W_fc1_c': weight_variable([16 * 12 * n_hidden_3, n_fc_1], 'W_fc1_c'),
     'W_fc2_c': weight_variable([n_fc_1, n_fc_2], 'W_fc2_c'),
     'out': weight_variable([n_fc_2, OutputNodesCount], 'W_out'),
 }
@@ -114,24 +113,25 @@ def get_classification_model():
     x, conv_layer = conv_layers()
 
     # Fully connected layer 1
-    conv_layer_flat = tf.reshape(conv_layer, [-1, 16 * 8 * n_hidden_3])
+    conv_layer_flat = tf.reshape(conv_layer, [-1, 16 * 12 * n_hidden_3])
     W_fc1 = weights['W_fc1_c']
     b_fc1 = biases['b_fc1_c']
     h_fc1 = tf.nn.relu(
         tf.add(tf.matmul(conv_layer_flat, W_fc1, name='fc1_c'), b_fc1, name='fc1_c_b'), name='fc1_relu')
 
-    # Dropout layer.
-    #fc1_c_dropout_prob = tf.placeholder(tf.float32, name="fc1_c_dropout")
-    #h_fc1_c_drop = tf.nn.dropout(h_fc1, fc1_c_dropout_prob)
-
+    # Fully connected layer 2
     W_fc2 = weights['W_fc2_c']
     b_fc2 = biases['b_fc2_c']
     h_fc2 = tf.nn.relu(
         tf.add(tf.matmul(h_fc1, W_fc2, name='fc2_c'), b_fc2, name='fc2_c_b'), name='fc2_relu')
 
-    # out layer
+    # Dropout layer
+    fc2_c_dropout_prob = tf.placeholder(tf.float32, name="fc2_c_dropout")
+    h_fc2_c_drop = tf.nn.dropout(h_fc2, fc2_c_dropout_prob)
+
+    # Output layer
     W_out = weights['out']
     b_out = biases['out_b']
 
-    y = tf.add(tf.matmul(h_fc2, W_out, name='out_mul'), b_out, name="outputs")
-    return x, y,  #fc1_c_dropout_prob,
+    y = tf.add(tf.matmul(h_fc2_c_drop, W_out, name='out_mul'), b_out, name="outputs")
+    return x, y, fc2_c_dropout_prob,

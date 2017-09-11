@@ -7,7 +7,7 @@ import train_classification as train
 from skimage import novice
 from skimage import io
 
-PATH = 'E:/Study/Mallenom/test.jpg'
+PATH = 'E:/Study/Mallenom/test55.jpg'
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 

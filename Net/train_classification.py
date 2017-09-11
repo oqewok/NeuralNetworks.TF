@@ -14,7 +14,7 @@ LEARNING_RATE = 1e-4
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 TEST_FILE_PATH = 'E:/Study/Mallenom/test.txt'
-MODEL_FOLDER = './models/test_model2/'
+MODEL_FOLDER = './models/test_model3/'
 
 
 # Загружает список изображений и соответствующих им меток
@@ -53,8 +53,8 @@ def next_batch(batched_data, batch_index):
 
 
 def get_loss(prediction, y):
-    loss = tf.nn.l2_loss(y - prediction)
-    return tf.sqrt(loss)
+    loss = 0.5 * tf.losses.hinge_loss(labels=y, logits=prediction) + 0.5 * tf.nn.l2_loss(y - prediction)
+    return loss
 
 
 def bb_intersection_over_union(boxA, boxB):
@@ -150,7 +150,6 @@ def train(num_of_epochs, learn_rate, batch_size):
         sess.run(init)
 
         print('Start time is', datetime.today())
-        accuracy = test(test_filenames_queue, x, prediction, dropout, 0)
         epoch_loss = 0.0
 
         for epoch in range(0, num_of_epochs):

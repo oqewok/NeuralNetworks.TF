@@ -9,7 +9,7 @@ from datetime import datetime
 from skimage import novice
 
 NUM_OF_EPOCHS = 100
-BATCH_SIZE = 1
+BATCH_SIZE = 20
 LEARNING_RATE = 1e-4
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'

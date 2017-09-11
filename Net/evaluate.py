@@ -46,4 +46,4 @@ with tf.Session() as sess:
     f.write(np.array2string(w, separator=','))
     f.close()
 
-    image_proc.show_image(original_img, w, width, height, original=[.47,        0.72333333,  0.7225,     0.81])
+    image_proc.show_image(original_img, w, width, height, original=None)

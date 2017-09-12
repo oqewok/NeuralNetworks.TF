@@ -9,12 +9,12 @@ from datetime import datetime
 from skimage import novice
 
 NUM_OF_EPOCHS = 100
-BATCH_SIZE = 20
-LEARNING_RATE = 1e-4
+BATCH_SIZE = 100
+LEARNING_RATE = 1e-3
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 TEST_FILE_PATH = 'E:/Study/Mallenom/test.txt'
-MODEL_FOLDER = './models/test_model3/'
+MODEL_FOLDER = './models/test_model4/'
 
 
 # Загружает список изображений и соответствующих им меток
@@ -52,9 +52,17 @@ def next_batch(batched_data, batch_index):
     return [images, masks]
 
 
-def get_loss(prediction, y):
-    loss = 0.5 * tf.losses.hinge_loss(labels=y, logits=prediction) + 0.5 * tf.nn.l2_loss(y - prediction)
+def l2_loss(prediction, ground_truth):
+    loss = 0.5 * tf.nn.l2_loss(prediction - ground_truth)
     return loss
+
+
+def smooth_l1_loss(prediction, ground_truth):
+    x = tf.abs(prediction - ground_truth)
+    condition = tf.less(x, 1)
+    loss = tf.where(condition, 0.5 * tf.square(x), x - 0.5)
+
+    return tf.reduce_sum(loss)
 
 
 def bb_intersection_over_union(boxA, boxB):
@@ -133,8 +141,18 @@ def train(num_of_epochs, learn_rate, batch_size):
 
     y = tf.placeholder(tf.float32, [None, model.OutputNodesCount], name='losses')
 
-    loss = get_loss(prediction, y)
-    optimizer = tf.train.AdamOptimizer(learn_rate).minimize(loss)
+    loss = smooth_l1_loss(prediction, y)
+
+    global_step = tf.Variable(0, trainable=False)
+    starter_learning_rate = 0.01
+    learning_rate = tf.train.exponential_decay(
+        learning_rate=starter_learning_rate,
+        global_step=global_step,
+        decay_steps=10000,
+        decay_rate=0.95,
+        staircase=True)
+
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
 
     print('Data batching...')
 
@@ -170,12 +188,13 @@ def train(num_of_epochs, learn_rate, batch_size):
             for step in range(0, len(batched_data[0])):
                 batch = next_batch(batched_data, step % len(batched_data[0]))
                 try:
-                    _, c = sess.run([optimizer, loss], feed_dict={x: batch[0], y: batch[1], dropout: 0.5})
+                    _, c = sess.run([optimizer, loss],
+                                    feed_dict={x: batch[0], y: batch[1], dropout: 0.5})
                     epoch_loss += c
                 except ValueError:
                     print('ValueError in file:', batched_data[1][step % len(batched_data[0])])
 
-                if step % batch_size == 0 and step % 100 == 0:
+                if step % batch_size == 0 or batch_size > len(batched_data[0]):
                     print('Step', step, 'of', len(batched_data[0]))
 
             epoch_loss /= len(batched_data[0])

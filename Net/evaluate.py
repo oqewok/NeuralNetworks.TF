@@ -7,7 +7,7 @@ import train_classification as train
 from skimage import novice
 from skimage import io
 
-PATH = 'E:/Study/Mallenom/test55.jpg'
+PATH = 'E:/Study/Mallenom/hst.jpg'
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 
@@ -46,4 +46,4 @@ with tf.Session() as sess:
     f.write(np.array2string(w, separator=','))
     f.close()
 
-    image_proc.show_image(original_img, w, width, height, original=None)
+    image_proc.show_image(original_img, w, width, height)

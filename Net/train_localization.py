@@ -10,11 +10,11 @@ from skimage import novice
 
 NUM_OF_EPOCHS = 100
 BATCH_SIZE = 100
-LEARNING_RATE = 1e-3
+LEARNING_RATE = 0.01
 
 TRAIN_FILE_PATH = 'E:/Study/Mallenom/train.txt'
 TEST_FILE_PATH = 'E:/Study/Mallenom/test.txt'
-MODEL_FOLDER = './models/test_model4/'
+MODEL_FOLDER = './models/test_model5/'
 
 
 # Загружает список изображений и соответствующих им меток
@@ -129,11 +129,13 @@ def test(test_filenames_queue, x, prediction, dropout, epoch_num):
             if iou >= 0.5:
                 correct_predictions += 1.0
 
-    accuracy = correct_predictions / len(test_batch[0])
+        accuracy = correct_predictions / len(test_batch[0])
+        logfile.write("##########################")
+        logfile.write("Total accuracy=%f" % accuracy)
     return accuracy
 
 
-def train(num_of_epochs, learn_rate, batch_size):
+def train(num_of_epochs, starting_learn_rate, batch_size):
     np.set_printoptions(threshold=np.nan, suppress=True)
 
     print('Loading model...')
@@ -144,9 +146,8 @@ def train(num_of_epochs, learn_rate, batch_size):
     loss = smooth_l1_loss(prediction, y)
 
     global_step = tf.Variable(0, trainable=False)
-    starter_learning_rate = 0.01
     learning_rate = tf.train.exponential_decay(
-        learning_rate=starter_learning_rate,
+        learning_rate=starting_learn_rate,
         global_step=global_step,
         decay_steps=10000,
         decay_rate=0.95,
@@ -213,5 +214,5 @@ def train(num_of_epochs, learn_rate, batch_size):
 
 if __name__ == "__main__":
     train(num_of_epochs=NUM_OF_EPOCHS,
-          learn_rate=LEARNING_RATE,
+          starting_learn_rate=LEARNING_RATE,
           batch_size=BATCH_SIZE)

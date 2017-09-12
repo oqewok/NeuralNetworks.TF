@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import data_reader as reader
 import image_proc
-import train_classification as train
+import train_localization as train
 
 from skimage import novice
 from skimage import io

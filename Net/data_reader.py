@@ -15,8 +15,13 @@ def read_labeled_image_list(path):
     filename_queue = {}
 
     for line in f:
-        filename, label = line[:-1].split('  ')
-        filename_queue.update({filename: label})
+        try:
+            filename, label = line[:-1].split('  ')
+            filename_queue.update({filename: label})
+        except ValueError:
+            print(path)
+            print(line)
+            raise ValueError
 
     f.close()
     return filename_queue

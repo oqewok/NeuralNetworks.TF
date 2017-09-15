@@ -1,6 +1,6 @@
 import sys
 
-import PIL
+# import PIL
 
 import traceback
 from PyQt5.QtWidgets import *
@@ -8,6 +8,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import random
 import numpy as np
+
+from Net import data_reader as reader
+
+
+PATH = 'D:/FFOutput/out.jpg'
+img = reader.read_image(PATH)
+image = [img]
 
 
 import tensorflow as tf
@@ -187,7 +194,14 @@ class MainForm(QMainWindow, MainWindow):
                 if (result is True):
                     painter = Painter(self.imageContainer.dataCopy)
 
-                    b = painter.paint_rect(coord[0])
+                    tmp_coord = coord[0]
+
+                    tmp_coord[0] *= self.imageContainer.getOriginalWidth()
+                    tmp_coord[1] *= self.imageContainer.getOriginalHeigth()
+                    tmp_coord[2] *= self.imageContainer.getOriginalWidth()
+                    tmp_coord[3] *= self.imageContainer.getOriginalHeigth()
+
+                    b = painter.paint_rect(tmp_coord)
 
                     if b == False:
                         self.showWarn("Warning", "Одна из областей не была нарисована")
@@ -339,8 +353,6 @@ class Painter():
 
 class TFSessionHolder():
 
-
-
     def __init__(self):
         self.sess = tf.Session()
         pass
@@ -378,19 +390,40 @@ class TFSessionHolder():
 
     #todo write evaluation
     def evaluate(self, img):
+
+        """Stub"""
+
+        # try:
+        #     result = True
+        #
+        #     coord = []
+        #     rect = QRect(230, 170, 140, 70)
+        #     coord.append(rect)
+        #
+        #     return result, coord
+        #
+        # except:
+        #     traceback.format_exc()
+        #     pass
+
         try:
-            result = True
+            with self.sess.as_default():
+                print('Evaluating started...')
+                self.w = self.y.eval(feed_dict={self.x: image, self.dropout: 1.0})[0]
+                print(self.w)
+                print('Evaluating ended!')
 
-            coord = []
-            rect = QRect(230, 170, 140, 70)
-            coord.append(rect)
-
-            return result, coord
-
-        except:
-            traceback.format_exc()
+                result = True
+                return result, self.w
             pass
 
+        except Exception as e:
+            with open('log.txt', 'a') as f:
+                f.write(str(e))
+                f.write(traceback.format_exc())
+                traceback.format_exc()
+
+            pass
 
 ''' "C:\\Users\\Username" '''
 

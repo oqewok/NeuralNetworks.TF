@@ -11,10 +11,8 @@ import numpy as np
 
 from Net import data_reader as reader
 
-
-PATH = 'D:/FFOutput/out.jpg'
-img = reader.read_image(PATH)
-image = [img]
+formImgWidth = 800
+formImgHeight = 452
 
 
 import tensorflow as tf
@@ -50,7 +48,7 @@ class MainForm(QMainWindow, MainWindow):
         pass
 
     def init_label(self):
-        self.label_Image.setGeometry(0, 0, 800, 452)
+        self.label_Image.setGeometry(0, 0, formImgWidth, formImgHeight)
         pixm = QPixmap(self.label_Image.size())
         pixm = pixm.scaled(self.label_Image.size(), Qt.KeepAspectRatio)
         self.label_Image.setPixmap(pixm)
@@ -189,19 +187,20 @@ class MainForm(QMainWindow, MainWindow):
         try:
             if (self.imageContainer.dataCopy is not None):
 
-                result, coord = self.TFSession.evaluate(self.imageContainer.dataCopy)
+                result, coord = self.TFSession.evaluate(self.imageContainer.image_array)
 
                 if (result is True):
                     painter = Painter(self.imageContainer.dataCopy)
 
-                    tmp_coord = coord[0]
+                    scalingX = formImgWidth
+                    scalingY = formImgHeight
 
-                    tmp_coord[0] *= self.imageContainer.getOriginalWidth()
-                    tmp_coord[1] *= self.imageContainer.getOriginalHeigth()
-                    tmp_coord[2] *= self.imageContainer.getOriginalWidth()
-                    tmp_coord[3] *= self.imageContainer.getOriginalHeigth()
+                    tmp_coordX1 = int(coord[0] * scalingX)
+                    tmp_coordY1 = int(coord[1] * scalingY)
+                    tmp_coordX2 = int(coord[2] * scalingX)
+                    tmp_coordY2 = int(coord[3] * scalingY)
 
-                    b = painter.paint_rect(tmp_coord)
+                    b = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
 
                     if b == False:
                         self.showWarn("Warning", "Одна из областей не была нарисована")
@@ -262,6 +261,9 @@ class Frame():
         self.data = QPixmap(FullPathToImg)
         self.dataCopy = self.data.copy()
         self.setInternalOriginalSizes()
+
+        img = reader.read_image(FullPathToImg)  # type of string
+        self.image_array = [img]
 
     def setInternalOriginalSizes(self):
         self.originalHeight = self.data.height()
@@ -389,27 +391,11 @@ class TFSessionHolder():
 
 
     #todo write evaluation
-    def evaluate(self, img):
-
-        """Stub"""
-
-        # try:
-        #     result = True
-        #
-        #     coord = []
-        #     rect = QRect(230, 170, 140, 70)
-        #     coord.append(rect)
-        #
-        #     return result, coord
-        #
-        # except:
-        #     traceback.format_exc()
-        #     pass
-
+    def evaluate(self, imgage_array):
         try:
             with self.sess.as_default():
                 print('Evaluating started...')
-                self.w = self.y.eval(feed_dict={self.x: image, self.dropout: 1.0})[0]
+                self.w = self.y.eval(feed_dict={self.x: imgage_array, self.dropout: 1.0})[0]
                 print(self.w)
                 print('Evaluating ended!')
 

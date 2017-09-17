@@ -1,13 +1,10 @@
 import sys
 
-# import PIL
-
 import traceback
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import random
-import numpy as np
 
 from Net import data_reader as reader
 
@@ -20,7 +17,6 @@ from mainwindow import Ui_MainWindow as MainWindow
 
 '''Model: download and save it on your disk'''
 # https://mega.nz/#F!tGBhFa6R!R3AmK91EFJqqQ166_pIpCA
-
 
 class MainForm(QMainWindow, MainWindow):
     def __init__(self, parent=None):
@@ -52,18 +48,24 @@ class MainForm(QMainWindow, MainWindow):
     def init_label(self):
         self.label_Image.setGeometry(0, 0, formImgWidth, formImgHeight)
         pixm = QPixmap(self.label_Image.size())
-        pixm = pixm.scaled(self.label_Image.size(), Qt.KeepAspectRatio)
+        pixm = pixm.scaled(formImgWidth, formImgHeight, Qt.KeepAspectRatio)
         self.label_Image.setPixmap(pixm)
         pass
 
     def update_label_Image(self, pixmap):
         self.label_Image.setPixmap(pixmap)
 
+    def get_label_width(self) -> int:
+        return self.label_Image.width()
+
+    def get_label_height(self) -> int:
+        return self.label_Image.height()
+
     # todo doesnt work, pass stub
     '''Закрыть инстанс GUI'''
 
     def OnCloseWindowClick(self):
-        # QCoreApplication.Core.instance().quit()
+        QCoreApplication.Core.instance().quit()
         pass
 
     '''Загрузить изображение'''
@@ -85,64 +87,46 @@ class MainForm(QMainWindow, MainWindow):
                 self.imageContainer.set_picture(path)
                 self.imageContainer.originalExtension = originalExtension
 
-                self.imageContainer.dataCopy = self.imageContainer.dataCopy.scaled(self.label_Image.size(),
+                self.imageContainer.dataCopy = self.imageContainer.dataCopy.scaled(formImgWidth, formImgHeight,
                                                                                    Qt.KeepAspectRatio)
                 self.update_label_Image(self.imageContainer.dataCopy)
 
 
                 '''Uncomment to draw example on img loaded'''
-                painter  = Painter(self.imageContainer.dataCopy)
-
-                rnd = random.randint(0, 400)
-                list  = []
-
-                # for i in range(1, 1):
-                #     x1 = random.randint(0, 200)
-                #     y1 = random.randint(0, 200)
-                #     width = random.randint(0, 400)
-                #     height = random.randint(0, 400)
-                #     rect = QRect(x1, y1, width, height)
-                #     list.append(rect)
-
-                x1 = 200
-                y1 = 200
-                width = 50
-                height = 50
-                rect = QRect(x1, y1, width, height)
-
-                list.append(rect)
-                # painter.paint_rectangles(list)
-                # painter.paint_rect(rect)
-                # painter.paint_rectangle(x1, y1, width=width, height=height)
-
-
-                b = painter.paint_rectangle(10, 10, 11, 11,  None)
-
-
-                if b == False:
-                    self.showWarn("Warning", "Одна из областей не была нарисована")
-                    pass
-
-                self.update_label_Image(self.imageContainer.dataCopy)
-                '''block ends'''
-
-
-                '''wip'''
-                # r, c = self.TFSession.evaluate(None)
-                #
-                # # coord_arr = np.asarray(c)
-                #
-                # print(c)
                 # painter  = Painter(self.imageContainer.dataCopy)
-                # if r is True:
-                #     painter.paint_rectangles(c)
-                #     painter.paint_rectangle(c)
-                #     self.update_label_Image(self.imageContainer.dataCopy)
-                '''wip ends'''
-
-                print(self.imageContainer.getOriginalHeigth())
-                print(self.imageContainer.getOriginalWidth())
-
+                #
+                # rnd = random.randint(0, 400)
+                # list  = []
+                #
+                # # for i in range(1, 1):
+                # #     x1 = random.randint(0, 200)
+                # #     y1 = random.randint(0, 200)
+                # #     width = random.randint(0, 400)
+                # #     height = random.randint(0, 400)
+                # #     rect = QRect(x1, y1, width, height)
+                # #     list.append(rect)
+                #
+                # x1 = 200
+                # y1 = 200
+                # width = 50
+                # height = 50
+                # rect = QRect(x1, y1, width, height)
+                #
+                # list.append(rect)
+                # # painter.paint_rectangles(list)
+                # # painter.paint_rect(rect)
+                # # painter.paint_rectangle(x1, y1, width=width, height=height)
+                #
+                #
+                # b = painter.paint_rectangle(10, 10, 11, 11,  None)
+                #
+                #
+                # if b == False:
+                #     self.showWarn("Warning", "Одна из областей не была нарисована")
+                #     pass
+                #
+                # self.update_label_Image(self.imageContainer.dataCopy)
+                '''block ends'''
 
                 pass
                 return path
@@ -179,7 +163,9 @@ class MainForm(QMainWindow, MainWindow):
             result = self.TFSession.load_model(FullFolderNameToModel=folderName, FullMetaFileName=fullName)
 
             if (result is not True):
-                self.showWarn(self.showWarn("Ошибка", "Модель не была загружена. Проверьте лог-файл"))
+                self.showWarn("Ошибка", "Модель не была загружена. Проверьте лог-файл")
+            else:
+                self.showWarn("Успех!", "Модель была успешно загружена")
         except:
             self.showWarn("Ошибка", "Ошибка при загрузке модели")
 
@@ -194,17 +180,26 @@ class MainForm(QMainWindow, MainWindow):
                 if (result is True):
                     painter = Painter(self.imageContainer.dataCopy)
 
-                    scalingX = formImgWidth
-                    scalingY = formImgHeight
+                    scalingX = self.get_label_width()
+                    scalingY = self.get_label_height()
+
+                    dataCopyX = self.imageContainer.dataCopy.width()
+                    dataCopyY = self.imageContainer.dataCopy.height()
+
+                    if scalingX > dataCopyX:
+                        scalingX = dataCopyX
+
+                    if scalingY > dataCopyY:
+                        scalingY = dataCopyY
 
                     tmp_coordX1 = int(coord[0] * scalingX)
                     tmp_coordY1 = int(coord[1] * scalingY)
                     tmp_coordX2 = int(coord[2] * scalingX)
                     tmp_coordY2 = int(coord[3] * scalingY)
 
-                    b = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
+                    result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
 
-                    if b == False:
+                    if result == False:
                         self.showWarn("Warning", "Одна из областей не была нарисована")
                         pass
 
@@ -373,11 +368,8 @@ class TFSessionHolder():
             self.y = self.graph.get_tensor_by_name('outputs:0')
 
             self.dropout = self.graph.get_tensor_by_name('fc2_c_dropout:0')
-            # train_step = graph.get_operation_by_name('Adam')
 
             self.sess.run(tf.global_variables_initializer())
-
-            print("loaded.")
 
             return True
             pass
@@ -391,8 +383,6 @@ class TFSessionHolder():
             return False
         pass
 
-
-    #todo write evaluation
     def evaluate(self, imgage_array):
         try:
             with self.sess.as_default():
@@ -410,7 +400,6 @@ class TFSessionHolder():
                 f.write(str(e))
                 f.write(traceback.format_exc())
                 traceback.format_exc()
-
             pass
 
 ''' "C:\\Users\\Username" '''

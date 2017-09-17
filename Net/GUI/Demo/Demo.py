@@ -14,10 +14,12 @@ from Net import data_reader as reader
 formImgWidth = 800
 formImgHeight = 452
 
-
 import tensorflow as tf
 
 from mainwindow import Ui_MainWindow as MainWindow
+
+'''Model: download and save it on your disk'''
+# https://mega.nz/#F!tGBhFa6R!R3AmK91EFJqqQ166_pIpCA
 
 
 class MainForm(QMainWindow, MainWindow):

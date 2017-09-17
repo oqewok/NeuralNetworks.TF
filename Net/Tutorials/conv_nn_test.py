@@ -80,7 +80,7 @@ h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 # выходов нейронов в дополнение к их маскировке, поэтому выпадение просто работает без какого-либо дополнительного
 # масштабирования.
 
-# дополнительный параметр keep_prob в системе feed_dict для управления отсевом.
+# дополнительный параметр dropout в системе feed_dict для управления отсевом.
 keep_prob = tf.placeholder(tf.float32)
 h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 

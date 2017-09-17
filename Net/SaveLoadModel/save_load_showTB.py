@@ -65,13 +65,13 @@ h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1, name="h_fc1")
 # выходов нейронов в дополнение к их маскировке, поэтому выпадение просто работает без какого-либо дополнительного
 # масштабирования.
 
-# дополнительный параметр keep_prob в системе feed_dict для управления отсевом.
-keep_prob = tf.placeholder(tf.float32, name="keep_prob")
+# дополнительный параметр dropout в системе feed_dict для управления отсевом.
+keep_prob = tf.placeholder(tf.float32, name="dropout")
 h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob, name="h_fcl_drop")
 
 # Выходной слой
 W_fc2 = weight_variable([1024, 10], name="W_fc2")
-b_fc2 = bias_variable([10], name="keep_prob")
+b_fc2 = bias_variable([10], name="dropout")
 
 y_conv = tf.matmul(h_fc1_drop, W_fc2, name="y_conv") + b_fc2
 
@@ -180,4 +180,4 @@ with tf.Session() as sess:
     writer = tf.summary.FileWriter("./logs/Merged", sess.graph);
 
     # print('test accuracy %g' % accuracy.eval(feed_dict={
-    #     x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+    #     x: mnist.test.images, y_: mnist.test.labels, dropout: 1.0}))

@@ -53,45 +53,73 @@ namespace ImageConverter
 			return sb.ToString().Substring(0, sb.Length - 1);
 		}
 
-		public double[] GetPointCoord(Rectangle rect)
+		public double[] GetPointCoord(Rectangle rect, int width, int height)
 		{
 			var coord = new double[4];
 
-			coord[0] = ConvertFunc(rect.Left, Width);
-			coord[1] = ConvertFunc(rect.Top, Heigth);
+			// Если нужны чистые ненормализованные координаты, то закомментить 3й параметр ConvertFunc.
+			coord[0] = ConvertFunc(rect.Left, width, "0..1");
+			coord[1] = ConvertFunc(rect.Top, height, "0..1");
 
-			//coord[2] = ConvertFunc(rect.Right, Width);
-			//coord[3] = ConvertFunc(rect.Top, Heigth);
-
-			//coord[4] = ConvertFunc(rect.Left, Width);
-			//coord[5] = ConvertFunc(rect.Bottom, Heigth);
-
-			coord[2] = ConvertFunc(rect.Right, Width);
-			coord[3] = ConvertFunc(rect.Bottom, Heigth);
+			coord[2] = ConvertFunc(rect.Right, width, "0..1");
+			coord[3] = ConvertFunc(rect.Bottom, height, "0..1");
 
 			Mask = coord;
 
 			return coord;
 		}
 
-		public Rectangle GetRectangle(double[] coord)
+		public Rectangle GetRectangle(double[] coord, int width, int height)
 		{
 			for(int i = 0; i < coord.Length; i++)
 			{
-				coord[i] = DeconvertFunc(coord[i], i % 2 == 0 ? Width : Heigth);
+				coord[i] = DeconvertFunc(coord[i], i % 2 == 0 ? width : height, "0..1");
 			}
 
-			return new Rectangle((int)coord[0], (int)coord[1], (int)Math.Abs(coord[2] - coord[0]), (int)Math.Abs(coord[3] - coord[1]));
+			return new Rectangle((int)coord[0], (int)coord[1], (int)coord[2] - (int)coord[0], (int)coord[3] - (int)coord[1]);
 		}
 
-		private double ConvertFunc(int x, int a)
+		public IEnumerable<OpenCvSharp.CPlusPlus.Point> GetPoints(double[] coord, int width, int height)
 		{
-			return (double)x / a;
+			var points = new List<OpenCvSharp.CPlusPlus.Point>();
+
+			for(int i = 0; i < coord.Length; i+=2)
+			{
+				var point = new OpenCvSharp.CPlusPlus.Point();
+
+				coord[i] = DeconvertFunc(coord[i], width, "0..1");
+				coord[i + 1] = DeconvertFunc(coord[i + 1], height, "0..1");
+
+				point.X = (int)coord[i];
+				point.Y = (int)coord[i + 1];
+
+				points.Add(point);
+			}
+
+			return points;
 		}
 
-		private double DeconvertFunc(double x, int a)
+		public double[] GetLabelVector(int labelNum, int count)
 		{
-			return a * x;
+			var labels = new double[count];
+			labels[labelNum] = 1;
+			Mask = labels;
+
+			return labels;
+		}
+
+		private double ConvertFunc(int x, int a, string type = "None")
+		{
+			if(type == "0..1")
+				return (double)x / a;
+			else return x;
+		}
+
+		private double DeconvertFunc(double x, int a, string type = "None")
+		{
+			if(type == "0..1")
+				return a * x;
+			else return x;
 		}
 
 		public IEnumerable<Rectangle> GetRegionsRectangles()

@@ -30,6 +30,8 @@
 		{
 			this._btnConvert = new System.Windows.Forms.Button();
 			this._btnReadMask = new System.Windows.Forms.Button();
+			this._btnConvertFromXml = new System.Windows.Forms.Button();
+			this.button1 = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// _btnConvert
@@ -52,11 +54,33 @@
 			this._btnReadMask.UseVisualStyleBackColor = true;
 			this._btnReadMask.Click += new System.EventHandler(this.OnButtonReadMaskClick);
 			// 
+			// _btnConvertFromXml
+			// 
+			this._btnConvertFromXml.Location = new System.Drawing.Point(175, 198);
+			this._btnConvertFromXml.Name = "_btnConvertFromXml";
+			this._btnConvertFromXml.Size = new System.Drawing.Size(112, 23);
+			this._btnConvertFromXml.TabIndex = 2;
+			this._btnConvertFromXml.Text = "Convert from XML";
+			this._btnConvertFromXml.UseVisualStyleBackColor = true;
+			this._btnConvertFromXml.Click += new System.EventHandler(this.OnButtonConvertFromXmlClick);
+			// 
+			// button1
+			// 
+			this.button1.Location = new System.Drawing.Point(13, 170);
+			this.button1.Name = "button1";
+			this.button1.Size = new System.Drawing.Size(75, 23);
+			this.button1.TabIndex = 3;
+			this.button1.Text = "button1";
+			this.button1.UseVisualStyleBackColor = true;
+			this.button1.Click += new System.EventHandler(this.button1_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(299, 241);
+			this.Controls.Add(this.button1);
+			this.Controls.Add(this._btnConvertFromXml);
 			this.Controls.Add(this._btnReadMask);
 			this.Controls.Add(this._btnConvert);
 			this.Name = "MainForm";
@@ -69,6 +93,8 @@
 
 		private System.Windows.Forms.Button _btnConvert;
 		private System.Windows.Forms.Button _btnReadMask;
+		private System.Windows.Forms.Button _btnConvertFromXml;
+		private System.Windows.Forms.Button button1;
 	}
 }
 

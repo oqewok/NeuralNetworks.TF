@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from data_loader.data_generator import DataGenerator
+from data_loader.mnist_data_provider import MnistDataProvider
 from models.example_model import ExampleModel
 from trainers.example_trainer import ExampleTrainer
 from utils.config import process_config
@@ -27,7 +27,7 @@ def main():
     # create instance of the model you want
     model = ExampleModel(config)
     # create your data generator
-    data = DataGenerator(config)
+    data = MnistDataProvider(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and path all previous components to it

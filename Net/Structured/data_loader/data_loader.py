@@ -8,15 +8,13 @@ class DataLoader():
     def __init__(self, config):
         self.config = config
 
-        self.root_directory = config.root_directory
-
         # define train, valid and test samples
         # TODO: Task4: Разобраться, где будут лежать train, valid и test выборка. В root_directory предполагается train.
         # Заранее копируем из ЯД в локальные папки Train, Test, Valid выборку с разметкой.
         self.samples = {
-            'TRAIN': DataLoader.read_filenames_list(os.path.abspath(self.root_directory)),
-            'VALID': DataLoader.read_filenames_list(os.path.abspath(self.root_directory)),
-            'TEST' : DataLoader.read_filenames_list(os.path.abspath(self.root_directory)),
+            'TRAIN': DataLoader.getSamplesFilenames(os.path.abspath(config.train_root_directory)),
+            'VALID': DataLoader.getSamplesFilenames(os.path.abspath(config.valid_root_directory)),
+            'TEST' : DataLoader.getSamplesFilenames(os.path.abspath(config.test_root_directory)),
         }
 
         self.num_train = len(self.samples['TRAIN'])
@@ -29,17 +27,26 @@ class DataLoader():
 
         self.order = np.random.permutation(self.num_train)
 
-    # TODO: Task 6: Данный метод должен загружать данные о разметке из txt-файлов в память.
-    @staticmethod
-    def read_filenames_list(directory):
-        ''' Reads list of filenames pairs.
-                @:return: list of [[img_file1, label_file1], [img_file2, label_file2], ...]
-        '''
-        #reader = Reader(directory)
-        # list of sample = [image, label]
-        #samples = Reader.get_samples_list()
 
-        return []
+    # Загружает данные о разметке из txt-файлов в память.
+    @staticmethod
+    def getSamplesFilenames(directory):
+        '''   @:return: list of [[img_file1, label_file1], [img_file2, label_file2], ...]
+        '''
+        f = open(directory, 'r')
+        samples = []
+
+        for line in f:
+            try:
+                image_file, label_file = line[:-1].split('  ')
+                samples.append([image_file, label_file])
+            except ValueError:
+                print(directory)
+                print(line)
+                raise ValueError
+
+        f.close()
+        return samples
 
 
     def next_batch(self):
@@ -72,3 +79,10 @@ class DataLoader():
         imgs = Reader.read_imgs(img_files)
 
         return imgs
+
+'''
+Reader.get_samples_file("E:/YandexDisk/testsamples/frames/Абхазия(AB)/", "E:/train.txt")
+samples = DataLoader.getSamplesFilenames("E:/train.txt")
+
+pass
+'''

@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 from skimage import io
 from Structured.data_loader.parser import MarkupParser
@@ -17,6 +18,9 @@ class Reader():
     def get_samples_file(directory, samples_file):
         ''' Gets list of image and labels filenames.
         '''
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
         # Get xml-parser
         parser = MarkupParser()
         with open(samples_file, "w") as result_file:
@@ -53,7 +57,7 @@ class Reader():
             images.append(image)
             labels.append(label)
 
-        return images, labels
+        return np.array(images), np.array(labels)
 
 
     @staticmethod

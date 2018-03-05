@@ -37,7 +37,7 @@ class Reader():
                         root, name + ".xml"))
 
                     if os.path.exists(xmlfilepath):
-                        # TODO: Task1: парсим xml файл. Если HumanChecked == false, то отбрасываем картинку и xml файл.
+                        # парсим xml файл. Если HumanChecked == false, то отбрасываем картинку и xml файл.
                         if parser.getHumanCheckedValueAttr(xmlfilepath):
                             result_file.write(filepath + "  " + xmlfilepath + "\n")
 
@@ -74,14 +74,17 @@ class Reader():
                         :param path: path to label file
                         :return: ndarray of [xmin ymin xmax ymax class]
         '''
+        # Get xml-parser
+        parser = MarkupParser()
+
         labels = np.loadtxt(path, dtype=int)
 
         return labels
 
-'''
+
 r = Reader("E:/YandexDisk/testsamples/frames/Абхазия(AB)/")
 r.get_samples_file("E:/train.txt")
-'''
+
 
 '''
 for root, dirs, files in os.walk("E:/Study/Спецификация, архитектура и проектирование ПО"):

@@ -1,6 +1,8 @@
 {
   "exp_name": "faster-rcnn",
-  "root_directory" : "E:/YandexDisk/testsamples/frames",
+  "train_root_directory" : "E:/YandexDisk/testsamples/frames",
+  "valid_root_directory" : "E:/YandexDisk/testsamples/frames",
+  "test_root_directory" : "E:/YandexDisk/testsamples/frames",
   "num_epochs": 1,
   "num_iter_per_epoch": 240,
   "learning_rate": 0.0001,

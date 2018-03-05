@@ -2,7 +2,7 @@ import numpy as np
 import os
 import math
 
-from data_loader.reader import Reader
+from Structured.data_loader.reader import Reader
 
 class DataLoader():
     def __init__(self, config):
@@ -29,16 +29,17 @@ class DataLoader():
 
         self.order = np.random.permutation(self.num_train)
 
+    # TODO: Task 6: Данный метод должен загружать данные о разметке из txt-файлов в память.
     @staticmethod
     def read_filenames_list(directory):
         ''' Reads list of filenames pairs.
                 @:return: list of [[img_file1, label_file1], [img_file2, label_file2], ...]
         '''
-        reader = Reader(directory)
+        #reader = Reader(directory)
         # list of sample = [image, label]
-        samples = reader.get_samples_list()
+        #samples = Reader.get_samples_list()
 
-        return samples
+        return []
 
 
     def next_batch(self):

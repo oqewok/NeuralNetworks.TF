@@ -1,9 +1,6 @@
 import os
-import skimage
-import numpy as np
 
 from skimage import io
-from skimage import transform
 from Structured.data_loader.parser import MarkupParser
 
 class Reader():
@@ -16,14 +13,15 @@ class Reader():
             lambda x: x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png') or x.endswith('.bmp'),
             all_files)
 
-    def get_samples_file(self, samples_file):
+    @staticmethod
+    def get_samples_file(directory, samples_file):
         ''' Gets list of image and labels filenames.
         '''
         # Get xml-parser
         parser = MarkupParser()
         with open(samples_file, "w") as result_file:
             # get labels directory
-            for root, dirs, files in os.walk(self.directory):
+            for root, dirs, files in os.walk(directory):
                 files = filter(
                     lambda x: x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png') or x.endswith('.bmp'),
                     files)
@@ -48,7 +46,8 @@ class Reader():
 
         for i in range(len(img_files)):
             image = io.imread(img_files[i])
-            # TODO: Task3: Придумать как парсить координаты номеров (Reader.parse_label): прямо из xml или использовать сохраненные txt файлы.
+
+            # Парсим координаты номеров прямо из xml файла.
             label = Reader.parse_label(label_files[i])
 
             images.append(image)
@@ -72,20 +71,18 @@ class Reader():
     def parse_label(path):
         ''' Parse label file. Using whitespace delimeter.
                         :param path: path to label file
-                        :return: ndarray of [xmin ymin xmax ymax class]
+                        :return: ndarray of [[xmin1 ymin1 xmax1 ymax1], ...,[xminN yminN xmaxN ymaxN]]
         '''
         # Get xml-parser
         parser = MarkupParser()
-
-        labels = np.loadtxt(path, dtype=int)
+        labels = parser.getLabels(path)
 
         return labels
 
 
-r = Reader("E:/YandexDisk/testsamples/frames/Абхазия(AB)/")
-r.get_samples_file("E:/train.txt")
-
-
+'''
+Reader.get_samples_file("E:/YandexDisk/testsamples/frames/Абхазия(AB)/", "E:/train.txt")
+'''
 '''
 for root, dirs, files in os.walk("E:/Study/Спецификация, архитектура и проектирование ПО"):
     for file in files:

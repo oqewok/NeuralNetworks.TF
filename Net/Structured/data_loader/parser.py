@@ -7,7 +7,6 @@ class MarkupParser:
         pass
 
     def getHumanCheckedValueAttr(self, xml_file):
-        # E:/YandexDisk/testsamples/frames/Беларусь(BY)/2017-09-08 17-20-44.xml
         tree = ET.ElementTree(file=xml_file)
         root = tree.getroot()
         hc = root.find('HumanChecked')
@@ -48,7 +47,9 @@ a = p.getLabels("E:/YandexDisk/testsamples/frames/Беларусь(BY)/2017-09-0
 pass
 '''
 
+'''
 p = MarkupParser()
 a = p.getHumanCheckedValueAttr("E:/YandexDisk/testsamples/frames/Абхазия(AB)/ABH (avto-nomer.ru)/car10387298.xml")
 pass
+'''
 

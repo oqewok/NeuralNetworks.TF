@@ -1,12 +1,12 @@
 import tensorflow as tf
 
-from data_loader.mnist_data_provider import MnistDataProvider
-from models.mnist_model import MnistModel
-from trainers.mnist_trainer import MnistTrainer
-from utils.config import process_config
-from utils.dirs import create_dirs
-from utils.logger import Logger
-from utils.utils import get_args
+from Structured.data_loader.mnist_data_provider import MnistDataProvider
+from Structured.models.mnist_model import MnistModel
+from Structured.trainers.mnist_trainer import MnistTrainer
+from Structured.utils.config import process_config
+from Structured.utils.dirs import create_dirs
+from Structured.utils.logger import Logger
+from Structured.utils.utils import get_args
 
 
 def main():

@@ -4,6 +4,7 @@ import numpy as np
 
 from skimage import io
 from skimage import transform
+from Structured.data_loader.parser import MarkupParser
 
 class Reader():
     def __init__(self, directory):
@@ -15,28 +16,30 @@ class Reader():
             lambda x: x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png') or x.endswith('.bmp'),
             all_files)
 
-    def get_samples_list(self):
+    def get_samples_file(self, samples_file):
         ''' Gets list of image and labels filenames.
         '''
-        # get labels directory
-        for root, dirs, files in os.walk(self.directory):
-            files = filter(
-                lambda x: x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png') or x.endswith('.bmp'),
-                files)
-            for file in files:
-                filepath = os.path.join(root, file)
-                name = file[0:file.rfind(".")]
-                xmlfilepath = os.path.join(root, name + ".xml")
+        # Get xml-parser
+        parser = MarkupParser()
+        with open(samples_file, "w") as result_file:
+            # get labels directory
+            for root, dirs, files in os.walk(self.directory):
+                files = filter(
+                    lambda x: x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png') or x.endswith('.bmp'),
+                    files)
+                for file in files:
+                    filepath = os.path.abspath(
+                        os.path.join(root, file))
 
-                if os.path.exists(xmlfilepath):
-                    # TODO: Task1: парсим xml файл. Если HumanChecked == false, то отбрасываем картинку и xml файл.
+                    name = file[0:file.rfind(".")]
 
-                    pass
+                    xmlfilepath = os.path.abspath(os.path.join(
+                        root, name + ".xml"))
 
-        # TODO: Task2: Записать пары [image, xmlfile] в samples.
-        samples = []
-
-        return samples
+                    if os.path.exists(xmlfilepath):
+                        # TODO: Task1: парсим xml файл. Если HumanChecked == false, то отбрасываем картинку и xml файл.
+                        if parser.getHumanCheckedValueAttr(xmlfilepath):
+                            result_file.write(filepath + "  " + xmlfilepath + "\n")
 
     @staticmethod
     def read_batch(img_files, label_files):
@@ -76,10 +79,16 @@ class Reader():
         return labels
 
 '''
+r = Reader("E:/YandexDisk/testsamples/frames/Абхазия(AB)/")
+r.get_samples_file("E:/train.txt")
+'''
+
+'''
 for root, dirs, files in os.walk("E:/Study/Спецификация, архитектура и проектирование ПО"):
     for file in files:
         print(os.path.join(root, file))
 '''
+
 '''
 directory = 'E:/data/Финляндия(FI)/'
 all_files = os.listdir(directory)

@@ -12,6 +12,7 @@ class DataLoader():
 
         # define train, valid and test samples
         # TODO: Task4: Разобраться, где будут лежать train, valid и test выборка. В root_directory предполагается train.
+        # Заранее копируем из ЯД в локальные папки Train, Test, Valid выборку с разметкой.
         self.samples = {
             'TRAIN': DataLoader.read_filenames_list(os.path.abspath(self.root_directory)),
             'VALID': DataLoader.read_filenames_list(os.path.abspath(self.root_directory)),

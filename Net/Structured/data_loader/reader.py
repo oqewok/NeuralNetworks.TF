@@ -48,13 +48,14 @@ class Reader():
         images = []
         labels = []
 
-        for i in range(len(img_files)):
-            image = io.imread(img_files[i])
-
-            # Парсим координаты номеров прямо из xml файла.
-            label = Reader.parse_label(label_files[i])
-
+        for img_file in img_files:
+            image = io.imread(img_file)
             images.append(image)
+
+        for label_file in label_files:
+            # Парсим координаты номеров прямо из xml файла.
+            label = Reader.parse_label(label_file)
+
             labels.append(label)
 
         return np.array(images), np.array(labels)

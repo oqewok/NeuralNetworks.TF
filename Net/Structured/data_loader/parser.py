@@ -16,12 +16,12 @@ class MarkupParser:
         else: return False
 
     def getLabels(self, xml_file):
-        x, y = [], []
         plates = []
 
         tree = ET.ElementTree(file=xml_file)
         root = tree.getroot()
         for plate in root.iter("Plate"):
+            x, y = [], []
             for region in plate.iter("Region"):
                 for point in region.iter("Point"):
                     x.append(point.attrib["X"])
@@ -43,9 +43,10 @@ class MarkupParser:
 
 '''
 p = MarkupParser()
-a = p.getLabels("E:/YandexDisk/testsamples/frames/Беларусь(BY)/2017-09-08 17-20-44.xml")
+a = p.getLabels("E:/YandexDisk/testsamples/frames/Россия(RU)/2017-06-17 17-25-33.xml")
 pass
 '''
+
 
 '''
 p = MarkupParser()

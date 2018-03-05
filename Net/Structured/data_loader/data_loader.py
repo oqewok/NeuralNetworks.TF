@@ -3,6 +3,7 @@ import os
 import math
 
 from Structured.data_loader.reader import Reader
+from Structured.utils.config import process_config
 
 class DataLoader():
     def __init__(self, config):
@@ -12,14 +13,17 @@ class DataLoader():
         # TODO: Task4: Разобраться, где будут лежать train, valid и test выборка. В root_directory предполагается train.
         # Заранее копируем из ЯД в локальные папки Train, Test, Valid выборку с разметкой.
         self.samples = {
-            'TRAIN': DataLoader.getSamplesFilenames(os.path.abspath(config.train_root_directory)),
-            'VALID': DataLoader.getSamplesFilenames(os.path.abspath(config.valid_root_directory)),
-            'TEST' : DataLoader.getSamplesFilenames(os.path.abspath(config.test_root_directory)),
+            'TRAIN': DataLoader.getSamplesFilenames(os.path.abspath(
+        os.path.join(config.train_files_directory, "train.txt"))),
+            'VALID': DataLoader.getSamplesFilenames(os.path.abspath(
+        os.path.join(config.train_files_directory, "valid.txt"))),
+            'TEST' : DataLoader.getSamplesFilenames(os.path.abspath(
+        os.path.join(config.train_files_directory, "test.txt"))),
         }
 
-        self.num_train = len(self.samples['TRAIN'])
-        self.num_valid = len(self.samples['VALID'])
-        self.num_test  = len(self.samples['TEST'])
+        self.num_train = len(self.samples['TRAIN'][0])
+        self.num_valid = len(self.samples['VALID'][0])
+        self.num_test  = len(self.samples['TEST'][0])
 
         self.batch_idx = 0
         self.batch_size = config.batch_size
@@ -34,19 +38,24 @@ class DataLoader():
         '''   @:return: list of [[img_file1, label_file1], [img_file2, label_file2], ...]
         '''
         f = open(directory, 'r')
-        samples = []
+        imgs, labels = [], []
 
         for line in f:
             try:
                 image_file, label_file = line[:-1].split('  ')
-                samples.append([image_file, label_file])
+
+                image_file = os.path.abspath(image_file)
+                label_file = os.path.abspath(label_file)
+
+                imgs.append(image_file)
+                labels.append(label_file)
             except ValueError:
                 print(directory)
                 print(line)
                 raise ValueError
 
         f.close()
-        return samples
+        return np.array(imgs), np.array(labels)
 
 
     def next_batch(self):
@@ -80,6 +89,13 @@ class DataLoader():
 
         return imgs
 
+'''
+config = process_config("E:/Study/Mallenom/NeuralNetworks.TF/Net/Structured/configs/fastercnn.json")
+loader = DataLoader(config)
+
+images, labels = loader.next_batch()
+pass
+'''
 '''
 Reader.get_samples_file("E:/YandexDisk/testsamples/frames/Абхазия(AB)/", "E:/train.txt")
 samples = DataLoader.getSamplesFilenames("E:/train.txt")

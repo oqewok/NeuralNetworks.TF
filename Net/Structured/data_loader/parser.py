@@ -15,7 +15,7 @@ class MarkupParser:
         if val == "True" or val == "true": return True
         else: return False
 
-    def getLabels(self, xml_file):
+    def getBoundBoxes(self, xml_file):
         plates = []
 
         tree = ET.ElementTree(file=xml_file)
@@ -35,7 +35,7 @@ class MarkupParser:
                 ymin = np.min(y)
                 ymax = np.max(y)
 
-                plates.append([xmin, ymin, xmax, ymax])
+                plates.append(np.stack((xmin, ymin, xmax, ymax)))
 
         plates = np.array(plates)
 
@@ -43,7 +43,7 @@ class MarkupParser:
 
 '''
 p = MarkupParser()
-a = p.getLabels("E:/YandexDisk/testsamples/frames/Россия(RU)/2017-06-17 17-25-33.xml")
+a = p.getBoundBoxes("E:/YandexDisk/testsamples/frames/Россия(RU)/2017-06-17 17-25-33.xml")
 pass
 '''
 

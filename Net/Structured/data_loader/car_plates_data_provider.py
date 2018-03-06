@@ -2,6 +2,7 @@ import numpy as np
 import os
 import math
 
+from  Structured.utils.img_preproc import *
 from Structured.data_loader.reader import Reader
 from Structured.utils.config import process_config
 
@@ -58,13 +59,11 @@ class CarPlatesDataProvider():
 
 
     def next_batch(self):
-        ''' Reads the batch of images and labels
-                @:param batch_size: length of image batch
-                @:param order:      array of shuffled indices size of self.num_train
+        ''' Reads the batch of images and bboxes
         '''
 
         img_files = self.samples['TRAIN'][0]
-        label_files = self.samples['TRAIN'][1]
+        bboxes_files = self.samples['TRAIN'][1]
 
         indices = self.order[self.batch_idx * self.batch_size:self.batch_idx * self.batch_size + self.batch_size]
 
@@ -75,11 +74,11 @@ class CarPlatesDataProvider():
             self.batch_idx = 0
 
         img_files = img_files[indices]
-        label_files = label_files[indices]
+        bboxes_files = bboxes_files[indices]
 
-        images, labels = Reader.read_batch(img_files, label_files)
+        images, bboxes = Reader.read_batch(img_files, bboxes_files, new_shape=config.input_shape)
 
-        yield images, labels
+        yield images, bboxes
 
 '''
     @staticmethod
@@ -96,8 +95,9 @@ data_provider = CarPlatesDataProvider(config)
 batches = []
 
 for i in range(data_provider.num_batches):
-    images, labels = next(data_provider.next_batch())
-    batches.append([images, labels])
+    images, bboxes = next(data_provider.next_batch())
+
+    batches.append([images, bboxes])
 pass
 '''
 

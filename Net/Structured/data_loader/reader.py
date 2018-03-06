@@ -2,6 +2,7 @@ import os
 import numpy as np
 
 from skimage import io
+from Structured.utils.img_preproc import *
 from Structured.data_loader.parser import MarkupParser
 
 class Reader():
@@ -44,21 +45,21 @@ class Reader():
                             result_file.write(filepath + "  " + xmlfilepath + "\n")
 
     @staticmethod
-    def read_batch(img_files, label_files):
+    def read_batch(img_files, bboxes_files, new_shape=None):
         images = []
-        labels = []
+        bboxes_all = []
 
-        for img_file in img_files:
-            image = io.imread(img_file)
+        for i in range(len(img_files)):
+            image = io.imread(img_files[i])
+            bboxes = Reader.parse_bbox_file(bboxes_files[i])
+
+            if new_shape != None:
+                image, bboxes = resize_img(image, new_shape, bboxes, as_int=True)
+
             images.append(image)
+            bboxes_all.append(bboxes)
 
-        for label_file in label_files:
-            # Парсим координаты номеров прямо из xml файла.
-            label = Reader.parse_label(label_file)
-
-            labels.append(label)
-
-        return np.array(images), np.array(labels)
+        return np.array(images), np.array(bboxes_all)
 
 
     @staticmethod
@@ -73,16 +74,16 @@ class Reader():
 
 
     @staticmethod
-    def parse_label(path):
+    def parse_bbox_file(path):
         ''' Parse label file. Using whitespace delimeter.
                         :param path: path to label file
                         :return: ndarray of [[xmin1 ymin1 xmax1 ymax1], ...,[xminN yminN xmaxN ymaxN]]
         '''
         # Get xml-parser
         parser = MarkupParser()
-        labels = parser.getLabels(path)
+        bboxes = parser.getBoundBoxes(path)
 
-        return labels
+        return bboxes
 
 
 '''

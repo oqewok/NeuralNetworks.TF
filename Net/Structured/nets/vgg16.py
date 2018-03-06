@@ -1,12 +1,14 @@
+import tensorflow as tf
+
 from Structured.utils.operations import *
 
-'''
-def build_basic_vgg16(self):
+
+def build_basic_vgg16(config):
     """ Build the basic VGG16 net. """
     print("Building the basic VGG16 net...")
-    bn = self.batch_norm
+    bn = config.use_batch_norm
 
-    H, W, C = self.img_shape
+    H, W, C = config.input_shape
 
     imgs = tf.placeholder(tf.float32, [None, H, W, C])
     is_train = tf.placeholder(tf.bool)
@@ -46,13 +48,12 @@ def build_basic_vgg16(self):
     conv5_3_feats = convolution(conv5_2_feats, 3, 3, 512, 1, 1, 'conv5_3')
     conv5_3_feats = batch_norm(conv5_3_feats, 'bn5_3', is_train, bn, 'relu')
 
-    self.conv_feats = conv5_3_feats
-    self.conv_feat_shape = [40, 40, 512]
+    conv_feats = conv5_3_feats
+    conv_feat_shape = [40, 40, 512]
 
-    self.roi_warped_feat_shape = [16, 16, 512]
-    self.roi_pooled_feat_shape = [8, 8, 512]
+    roi_warped_feat_shape = [16, 16, 512]
+    roi_pooled_feat_shape = [8, 8, 512]
 
-    self.imgs = imgs
-    self.is_train = is_train
     print("Basic VGG16 net built.")
-'''
+
+    return imgs, is_train, conv_feats, conv_feat_shape, roi_warped_feat_shape, roi_pooled_feat_shape

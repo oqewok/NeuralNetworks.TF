@@ -76,7 +76,7 @@ class CarPlatesDataProvider():
         img_files = img_files[indices]
         bboxes_files = bboxes_files[indices]
 
-        images, bboxes = Reader.read_batch(img_files, bboxes_files, new_shape=config.input_shape)
+        images, bboxes = Reader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
 
         yield images, bboxes
 

@@ -44,6 +44,7 @@ class Reader():
                         if parser.getHumanCheckedValueAttr(xmlfilepath):
                             result_file.write(filepath + "  " + xmlfilepath + "\n")
 
+
     @staticmethod
     def read_batch(img_files, bboxes_files, new_shape=None):
         images = []

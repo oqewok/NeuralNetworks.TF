@@ -3,9 +3,9 @@ from tqdm import tqdm
 import numpy as np
 
 
-class FasterRCNNTrainer(BaseTrain):
+class TemplateTrainer(BaseTrain):
     def __init__(self, sess, model, data, config, logger):
-        super(FasterRCNNTrainer, self).__init__(sess, model, data, config, logger)
+        super(TemplateTrainer, self).__init__(sess, model, data, config, logger)
 
 
     def train_epoch(self):
@@ -15,7 +15,6 @@ class FasterRCNNTrainer(BaseTrain):
        -add any summaries you want using the summary
         """
         pass
-
 
     def train_step(self):
         """

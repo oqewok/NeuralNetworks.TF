@@ -117,8 +117,9 @@ class RPN:
         return num_anchor, anchors, anchor_is_untruncated, num_untruncated_anchor, parent_anchors, parent_anchor_is_untruncated, num_untruncated_parent_anchor
 
 """ Generate the anchors. """
-factor = 1.5
-scale = 64
+# anchor_sizes = [16, 32, 64] => factor = 2.
+factor = 2
+scale = 16
 ratio = [4, 1]
 
 ih, iw = 600, 800
@@ -178,6 +179,7 @@ y = np.expand_dims(y, 1)
 x = np.expand_dims(x, 1)
 h = np.expand_dims(h, 1)
 w = np.expand_dims(w, 1)
+# TODO: Task7: М.б. лучше concatenate((x, y, h, w) ???
 anchors = np.concatenate((y, x, h, w), axis=1)
 anchors = np.array(anchors, np.int32)
 
@@ -194,3 +196,5 @@ num_untruncated_anchor = np.sum(anchor_is_untruncated)
 num_untruncated_anchor = np.array([num_untruncated_anchor], np.int32)
 num_untruncated_parent_anchor = np.sum(parent_anchor_is_untruncated)
 num_untruncated_parent_anchor = np.array([num_untruncated_parent_anchor], np.int32)
+
+pass

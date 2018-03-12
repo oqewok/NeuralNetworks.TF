@@ -13,7 +13,7 @@
   "input_shape"           : [600, 800, 3],
   "dropout"               : 0.5,
   "use_batch_norm"        : 1,
-  "anchor_sizes"          : [64, 128, 256],
+  "anchor_sizes"          : [16, 32, 64],
   "anchor_ratios"         : [1, 4, 6],
   "anchor_stride"         : 1,
   "max_to_keep"           : 5

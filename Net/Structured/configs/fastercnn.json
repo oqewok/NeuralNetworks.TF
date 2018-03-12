@@ -10,11 +10,11 @@
   "num_iter_per_epoch"    : 240,
   "learning_rate"         : 0.0001,
   "batch_size"            : 250,
-  "input_shape"           : [224, 224, 3],
+  "input_shape"           : [600, 800, 3],
   "dropout"               : 0.5,
   "use_batch_norm"        : 1,
   "anchor_sizes"          : [64, 128, 256],
-  "anchor_ratios"         : [0.25, 1, 4],
+  "anchor_ratios"         : [1, 4, 6],
   "anchor_stride"         : 1,
   "max_to_keep"           : 5
 }

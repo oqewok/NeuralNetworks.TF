@@ -1,5 +1,7 @@
 from Structured.base.base_model import BaseModel
 from Structured.nets.vgg16 import build_basic_vgg16
+from Structured.models.fasterrcnn.rpn import RPN
+
 import tensorflow as tf
 
 
@@ -39,6 +41,10 @@ class FasterRCNNModel(BaseModel):
         else:
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
                 self.config)
+
+        # RPN
+        self.rpn = RPN(self.config)
+
 
         pass
 

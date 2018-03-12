@@ -46,10 +46,11 @@ class MarkupParser:
 
         return plates
 
-
+"""
 p = MarkupParser()
 a = p.getBoundBoxes("E:/YandexDisk/testsamples/frames/Россия(RU)/2017-06-17 17-25-33.xml")
 pass
+"""
 
 
 

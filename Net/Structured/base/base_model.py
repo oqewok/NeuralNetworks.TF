@@ -10,6 +10,9 @@ class BaseModel:
         # init the epoch counter
         self.init_cur_epoch()
 
+        self.saver            = None
+        self.cur_epoch_tensor = None
+
     # save function thet save the checkpoint in the path defined in configfile
     def save(self, sess):
         print("Saving model...")

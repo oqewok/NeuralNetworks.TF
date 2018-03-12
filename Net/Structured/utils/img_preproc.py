@@ -16,7 +16,7 @@ def resize_img(image, new_shape, bboxes=None, as_int=True):
     if as_int:
         image = np.array(image, int)
 
-    if bboxes.all() != None:
+    if bboxes is not None:
         bboxes = adjust_bboxes(bboxes, old_shape, new_shape)
         return image, bboxes
 

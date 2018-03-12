@@ -24,28 +24,33 @@ class MarkupParser:
             x, y = [], []
             for region in plate.iter("Region"):
                 for point in region.iter("Point"):
-                    x.append(point.attrib["X"])
-                    y.append(point.attrib["Y"])
+                    x.append(int(point.attrib["X"]))
+                    y.append(int(point.attrib["Y"]))
 
-                x = np.array(x, dtype=int)
-                y = np.array(y, dtype=int)
+                xcenter = abs(int(
+                    0.5 * (max(x) + min(x))
+                ))
+                ycenter = abs(int(
+                    0.5 * (max(y) + min(y))
+                ))
+                width   = abs(int(
+                    max(x) - min(x)
+                ))
+                height  = abs(int(
+                    max(y) - min(y)
+                ))
 
-                xmin = np.min(x)
-                xmax = np.max(x)
-                ymin = np.min(y)
-                ymax = np.max(y)
+                plates.append(np.stack((xcenter, ycenter, width, height)))
 
-                plates.append(np.stack((xmin, ymin, xmax, ymax)))
-
-        plates = np.array(plates)
+        plates = np.array(plates, dtype=int)
 
         return plates
 
-'''
+
 p = MarkupParser()
 a = p.getBoundBoxes("E:/YandexDisk/testsamples/frames/Россия(RU)/2017-06-17 17-25-33.xml")
 pass
-'''
+
 
 
 '''

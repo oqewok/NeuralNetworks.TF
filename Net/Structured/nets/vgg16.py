@@ -49,14 +49,15 @@ def build_basic_vgg16(config):
     conv5_3_feats = batch_norm(conv5_3_feats, 'bn5_3', is_train, bn, 'relu')
 
     conv_feats       = conv5_3_feats
-    conv_feats_shape = np.array(conv_feats.shape[1:4], dtype=int)
+    conv_feats_shape = list(np.array(conv_feats.shape[1:4], np.int32))
 
     print("Basic VGG16 net built.")
 
     return imgs, is_train, conv_feats, conv_feats_shape
 
-
+"""
 from Structured.utils.config import process_config
 
 config = process_config("E:/Study/Mallenom/NeuralNetworks.TF/Net/Structured/configs/fastercnn.json")
 build_basic_vgg16(config)
+"""

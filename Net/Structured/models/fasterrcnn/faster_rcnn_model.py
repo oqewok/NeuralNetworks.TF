@@ -32,18 +32,18 @@ class FasterRCNNModel(BaseModel):
 
         # Build basic CNN for feature extraction. Default is VGG16.
         ''' For example:
-        elif self.config.basic_cnn == "ResNet50":
+        elif self.config.basic_cnn == "resnet50":
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_resnet50(
             self.config)'''
-        if self.config.basic_cnn == "VGG16":
+        if self.config.basic_cnn == "vgg16":
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
                 self.config)
         else:
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
                 self.config)
 
-        # RPN
-        self.rpn = RPN(self.config)
+        # Build RPN
+        self.rpn = RPN(self.config, self.conv_feats_tensor, self.conv_feats_shape, self.is_training_tensor)
 
 
         pass
@@ -54,9 +54,8 @@ class FasterRCNNModel(BaseModel):
 
         pass
 
-'''
+
 from Structured.utils.config import process_config
 config = process_config("E:/Study/Mallenom/NeuralNetworks.TF/Net/Structured/configs/fastercnn.json")
 model = FasterRCNNModel(config)
 pass
-'''

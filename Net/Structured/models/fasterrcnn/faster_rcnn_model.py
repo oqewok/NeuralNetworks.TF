@@ -43,7 +43,9 @@ class FasterRCNNModel(BaseModel):
                 self.config)
 
         # Build RPN
-        self.rpn = RPN(self.config, self.conv_feats_tensor, self.conv_feats_shape, self.is_training_tensor)
+        self.rpn = RPN(
+            self.config, self.conv_feats_tensor, self.conv_feats_shape, self.is_training_tensor
+        )
 
 
         pass

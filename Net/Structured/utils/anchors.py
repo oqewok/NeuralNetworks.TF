@@ -24,8 +24,8 @@ def generate_anchors(img_shape, conv_feats_shape, scales, ratios):
 
     # s = [5, 10, 15] => [[5, 10, 15], [5, 10, 15], ... (len(s) * len(r) times)]
     # r = [1, 2, 3]   => [[1, 1, 1], [2, 2, 2], [3, 3, 3], [1, 1, 1], [2, 2, 2], [3, 3, 3]... len(r) times)]
-    r = np.repeat(r, len(ratios), axis=0)
-    s = np.tile(s, (len(s), 1))
+    r = np.repeat(r, len(scales), axis=0)
+    s = np.tile(s, (len(ratios), 1))
 
     # ratios:          1  1   1   2   2   2   3   3   3
     # w = s[i]*r[j] = [5, 10, 15, 10, 20, 30, 15, 30, 45]

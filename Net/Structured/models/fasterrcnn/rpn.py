@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+from Structured.models.fasterrcnn.rpn_proposal import RPNProposal
 from Structured.utils.operations import *
 from Structured.utils.anchors import generate_anchors
 
@@ -42,109 +43,58 @@ class RPN:
         img_shape2d             = self.img_shape[:2]
         conv_feats_shape2d      = self.conv_feats_shape[:2]
 
-        """ Generate the anchors. """
-        self.anchors            = generate_anchors(
-            img_shape2d, conv_feats_shape2d, self.anchor_scales, self.anchor_ratios)
+        # TODO: Переделать генерацию "якорей" в anchors.py.
+        # """ Generate the anchors. """
+        #self.all_anchors        = generate_anchors(
+        #     img_shape2d, conv_feats_shape2d, self.anchor_scales, self.anchor_ratios)
 
-        self.total_anchor_count = np.count_nonzero(self.anchors, axis=(0, 1, 2)) // 4
+        #self.total_anchor_count = np.count_nonzero(self.anchors, axis=(0, 1, 2)) // 4
 
-        self.bn                 = self.config.use_batch_norm
+        # Get the RPN feature using a simple conv net. Activation function
+        # can be set to empty.
+        self.rpn_conv_feature       = convolution(
+            self.conv_feats, 3, 3, 512, 1, 1, 'rpn_conv', group_id=1)
+        self.rpn_feature            = nonlinear(
+            self.rpn_conv_feature, 'relu')
 
-        self.feats              = tf.placeholder(tf.float32, [None] + self.conv_feats_shape)
-        self.gt_anchor_labels   = tf.placeholder(tf.int32,   [None, self.total_anchor_count])
-        self.gt_anchor_regs     = tf.placeholder(tf.float32, [None, self.total_anchor_count, 4])
-        self.anchor_masks       = tf.placeholder(tf.float32, [None, self.total_anchor_count])
-        self.anchor_weights     = tf.placeholder(tf.float32, [None, self.total_anchor_count])
-        self.anchor_reg_masks   = tf.placeholder(tf.float32, [None, self.total_anchor_count])
+        # Then we apply separate convolution layers for classification and regression.
 
-        # Compute the RoI proposals
-        all_rpn_logits          = []
-        all_rpn_regs            = []
+        # rpn_cls_score_original has shape (?, H, W, num_anchors * 2)
+        # rpn_bbox_pred_original has shape (?, H, W, num_anchors * 4)
+        # where H, W are height and width of the feature map.
+        self.rpn_cls_score_original  = convolution(
+            self.rpn_feature, 1, 1, 2 * self.anchors_count, 1, 1, 'rpn_cls', group_id=1)
+        self.rpn_bbox_pred_original  = convolution(
+            self.rpn_feature, 1, 1, 4 * self.anchors_count, 1, 1, 'rpn_regs', group_id=1)
 
-        current_feats           = self.feats
+        # Convert (flatten) `rpn_cls_score_original` which has two scalars per
+        # anchor per location to be able to apply softmax.
+        self.rpn_cls_score = tf.reshape(self.rpn_cls_score_original, [self.config.batch_size, -1, 2])
+        #self.rpn_cls_score = tf.reshape(self.rpn_cls_score_original, [-1, 2])
 
-        if self.config.basic_cnn == 'vgg16':
-            kernel_sizes = [10, 10]
-        else:
-            kernel_sizes = [5, 5]
+        # Now that `rpn_cls_score` has shape (Batch_size * H * W * num_anchors, 2), we apply
+        # softmax to the last dim.
+        self.rpn_cls_prob = tf.nn.softmax(self.rpn_cls_score)
 
-        for i in range(2):
-            label_i = '_' + str(i)
-            rpn1 = convolution(current_feats, kernel_sizes[0], kernel_sizes[1], 512, 1, 1, 'rpn1' + label_i, group_id=1)
-            rpn1 = nonlinear(rpn1, 'relu')
-            rpn1 = dropout(rpn1, 0.5, self.is_training)
+        # Flatten bounding box delta prediction for easy manipulation.
+        # We end up with `rpn_bbox_pred` having shape (Batch_size * H * W * num_anchors, 4).
+        self.rpn_bbox_pred = tf.reshape(self.rpn_bbox_pred_original, [self.config.batch_size, -1, 4])
+        #self.rpn_bbox_pred = tf.reshape(self.rpn_bbox_pred_original, [-1, 4])
 
-            for j in range(9):
-                label_ij = str(i) + '_' + str(j)
+        # We have to convert bbox deltas to usable bounding boxes and remove
+        # redundant ones using Non Maximum Suppression (NMS).
+        # TODO: Реализовать класс RPNProposal в rpn_proposal.py
+        self.proposal = RPNProposal(
+            self.config, self.anchors_count
+        )
 
-                rpn_logits = convolution(rpn1, 1, 1, 2, 1, 1, 'rpn_logits' + label_ij, group_id=1)
-                rpn_logits = tf.reshape(rpn_logits, [self.config.batch_size, -1, 2])
-                all_rpn_logits.append(rpn_logits)
+        # TODO: Реализовать метод, который выдает предсказания координат в rpn_proposal.py
+        # self.proposal_prediction = self.proposal.get_obj_proposals(
+        #     self.rpn_cls_prob, self.rpn_bbox_pred, all_anchors, img_shape2d)
 
-                rpn_regs = convolution(rpn1, 1, 1, 4, 1, 1, 'rpn_regs' + label_ij, group_id=1)
-                rpn_regs = tf.clip_by_value(rpn_regs, -0.2, 0.2)
-                rpn_regs = tf.reshape(rpn_regs, [self.config.batch_size, -1, 4])
-                all_rpn_regs.append(rpn_regs)
-
-            if i < 1:
-                current_feats = max_pool(current_feats, 2, 2, 2, 2, 'rpn_pool' + label_i)
-
-        all_rpn_logits          = tf.concat(1, all_rpn_logits)
-        all_rpn_regs            = tf.concat(1, all_rpn_regs)
-
-        all_rpn_logits          = tf.reshape(all_rpn_logits, [-1, 2])
-        all_rpn_regs            = tf.reshape(all_rpn_regs, [-1, 4])
-
-        # Compute the loss function
-        self.gt_anchor_labels   = tf.reshape(self.gt_anchor_labels, [-1])
-        self.gt_anchor_regs     = tf.reshape(self.gt_anchor_regs, [-1, 4])
-        self.anchor_masks       = tf.reshape(self.anchor_masks, [-1])
-        self.anchor_weights     = tf.reshape(self.anchor_weights, [-1])
-        self.anchor_reg_masks   = tf.reshape(self.anchor_reg_masks, [-1])
-
-        loss0 = tf.nn.sparse_softmax_cross_entropy_with_logits(all_rpn_logits, self.gt_anchor_labels) * self.anchor_masks
-        loss0 = tf.reduce_sum(loss0 * self.anchor_weights) / tf.reduce_sum(self.anchor_weights)
-
-        w = self.l2_loss(all_rpn_regs, self.gt_anchor_regs) * self.anchor_reg_masks
-        z = tf.reduce_sum(self.anchor_reg_masks)
-        loss0 = tf.cond(tf.less(0.0, z), lambda: loss0 + self.config.rpn_reg_weight * tf.reduce_sum(w) / z, lambda: loss0)
-
-        loss1 = self.config.weight_decay * tf.add_n(tf.get_collection('l2_1'))
-        loss = loss0 + loss1
-
-        # Build the optimizer
-        if self.config.optimizer == 'adam':
-            optimizer = tf.train.AdamOptimizer(self.config.learning_rate)
-        elif self.config.optimizer == 'momentum':
-            optimizer = tf.train.MomentumOptimizer(self.config.learning_rate, self.config.momentum)
-        elif self.config.optimizer == 'rmsprop':
-            optimizer = tf.train.RMSPropOptimizer(self.config.learning_rate, self.config.decay, self.config.momentum)
-        else:
-            optimizer = tf.train.GradientDescentOptimizer(self.config.learning_rate)
-
-        #opt_op = optimizer.minimize(loss, global_step=self.global_step)
-        opt_op          = optimizer.minimize(loss)
-
-        rpn_probs       = tf.nn.softmax(all_rpn_logits)
-        rpn_scores      = tf.squeeze(tf.slice(rpn_probs, [0, 1], [-1, 1]))
-        rpn_scores      = tf.reshape(rpn_scores, [self.config.batch_size, self.total_anchor_count])
-        rpn_regs        = tf.reshape(all_rpn_regs, [self.config.batch_size, self.total_anchor_count, 4])
-
-        self.rpn_loss   = loss
-        self.rpn_loss0  = loss0
-        self.rpn_loss1  = loss1
-        self.rpn_opt_op = opt_op
-
-        self.rpn_scores = rpn_scores
-        self.rpn_regs   = rpn_regs
+        pass
 
 
-    def l2_loss(self, s, t):
-        """ L2 loss function. """
-        d = s - t
-        x = d * d
-        loss = tf.reduce_sum(x, 1)
-        return loss
 """ Generate the anchors.
 # anchor_scales = [32, 64, 128] => factor = 2.
 scales = np.array([32, 64, 128], dtype=int)

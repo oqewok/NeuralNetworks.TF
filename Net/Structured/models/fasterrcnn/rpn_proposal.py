@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+from Structured.utils.bbox_transform import decode, clip_boxes, change_order
+
 class RPNProposal:
     """Transforms anchors and RPN predictions into object proposals.
     Using the fixed anchors and the RPN predictions for both classification
@@ -10,11 +12,134 @@ class RPNProposal:
     (NMS).
     """
     def __init__(self, config, anchors_count):
-        self.config         = config
-        self.anchors_count  = anchors_count
+        self.config             = config
+        self.anchors_count      = anchors_count
 
+        # Minimum probability to be used as proposed object.
+        self.min_prob_threshold = self.config.min_prob_threshold
+
+        # Total proposals to use before running NMS (sorted by score).
+        self.pre_nms_top_n      = self.config.pre_nms_top_n
+        # Total proposals to use after NMS (sorted by score).
+        self.post_nms_top_n     = self.config.post_nms_top_n
+        # NMS threshold used when removing "almost duplicates".
+        self.nms_threshold      = self.config.nms_threshold
         pass
 
 
     def get_obj_proposals(self, rpn_cls_prob, rpn_bbox_pred, all_anchors, img_shape):
-        pass
+        """
+                Args:
+                    rpn_cls_prob: A Tensor with the softmax output for each anchor.
+                        Its shape should be (total_anchors, 2), with the probability of
+                        being background and the probability of being foreground for
+                        each anchor.
+                    rpn_bbox_pred: A Tensor with the regression output for each anchor.
+                        Its shape should be (total_anchors, 4).
+                    all_anchors: A Tensor with the anchors bounding boxes of shape
+                        (total_anchors, 4), having (x_min, y_min, x_max, y_max) for
+                        each anchor.
+                    im_shape: A Tensor with the image shape in format (height, width).
+                Returns:
+                    prediction_dict with the following keys:
+                        proposals: A Tensor with the final selected proposed
+                            bounding boxes. Its shape should be
+                            (total_proposals, 4).
+                        scores: A Tensor with the probability of being an
+                            object for that proposal. Its shape should be
+                            (total_proposals, 1)
+                """
+
+        # Scores are extracted from the second scalar of the cls probability.
+        # cls_probability is a softmax of (background, foreground).
+        all_scores = rpn_cls_prob[:, 1]
+        # Force flatten the scores (it should be already be flatten).
+        all_scores = tf.reshape(all_scores, [-1])
+
+        with tf.name_scope('filter_outside_anchors'):
+            (x_min_anchor, y_min_anchor,
+             x_max_anchor, y_max_anchor) = tf.unstack(all_anchors, axis=1)
+
+            anchor_filter = tf.logical_and(
+                tf.logical_and(
+                    tf.greater_equal(x_min_anchor, 0),
+                    tf.greater_equal(y_min_anchor, 0)
+                ),
+                tf.logical_and(
+                    tf.less(x_max_anchor, img_shape[1]),
+                    tf.less(y_max_anchor, img_shape[0])
+                )
+            )
+            anchor_filter = tf.reshape(anchor_filter, [-1])
+            all_anchors = tf.boolean_mask(
+                all_anchors, anchor_filter, name='filter_anchors')
+            rpn_bbox_pred = tf.boolean_mask(rpn_bbox_pred, anchor_filter)
+            all_scores = tf.boolean_mask(all_scores, anchor_filter)
+
+        all_proposals = decode(all_anchors, rpn_bbox_pred)
+
+        # Filter proposals with less than threshold probability.
+        min_prob_filter = tf.greater_equal(
+            all_scores, self.min_prob_threshold
+        )
+
+        # Filter proposals with negative or zero area.
+        (x_min, y_min, x_max, y_max) = tf.unstack(all_proposals, axis=1)
+        zero_area_filter = tf.greater(
+            tf.maximum(x_max - x_min, 0.0) * tf.maximum(y_max - y_min, 0.0),
+            0.0
+        )
+        proposal_filter = tf.logical_and(zero_area_filter, min_prob_filter)
+
+        # Filter proposals and scores.
+        all_proposals_total = tf.shape(all_scores)[0]
+        unsorted_scores = tf.boolean_mask(
+            all_scores, proposal_filter,
+            name='filtered_scores'
+        )
+        unsorted_proposals = tf.boolean_mask(
+            all_proposals, proposal_filter,
+            name='filtered_proposals'
+        )
+
+        unsorted_proposals       = clip_boxes(unsorted_proposals, img_shape)
+
+        # filtered_proposals_total = tf.shape(unsorted_scores)[0]
+
+        # Get top `pre_nms_top_n` indices by sorting the proposals by score.
+        k                        = tf.minimum(self.pre_nms_top_n, tf.shape(unsorted_scores)[0])
+        top_k                    = tf.nn.top_k(unsorted_scores, k=k)
+
+        sorted_top_proposals     = tf.gather(unsorted_proposals, top_k.indices)
+        sorted_top_scores        = top_k.values
+
+        with tf.name_scope('nms'):
+            # We reorder the proposals into TensorFlows bounding box order
+            # for `tf.image.non_max_supression` compatibility.
+            proposals_tf_order = change_order(sorted_top_proposals)
+            # We cut the pre_nms filter in pure TF version and go straight
+            # into NMS.
+            selected_indices = tf.image.non_max_suppression(
+                proposals_tf_order, tf.reshape(
+                    sorted_top_scores, [-1]
+                ),
+                self.post_nms_top_n, iou_threshold=self.nms_threshold
+            )
+
+            # Selected_indices is a smaller tensor, we need to extract the
+            # proposals and scores using it.
+            nms_proposals_tf_order = tf.gather(
+                proposals_tf_order, selected_indices,
+                name='gather_nms_proposals'
+            )
+
+            # We switch back again to the regular bbox encoding.
+            proposals = change_order(nms_proposals_tf_order)
+            scores = tf.gather(
+                sorted_top_scores, selected_indices,
+                name='gather_nms_proposals_scores'
+            )
+
+        proposals = clip_boxes(proposals, img_shape)
+
+        return proposals, scores

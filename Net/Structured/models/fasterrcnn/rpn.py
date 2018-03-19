@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 from Structured.models.fasterrcnn.rpn_proposal import RPNProposal
+from Structured.models.fasterrcnn.rpn_target import RPNTarget
 from Structured.utils.operations import *
 from Structured.utils.losses import smooth_l1_loss
 from Structured.utils.anchors import generate_anchors
@@ -25,12 +26,14 @@ class RPN:
 
             Замечание: данный модуль может быть использован независимо от Faster R-CNN.
     """
-    def __init__(self, config, conv_feats, conv_feats_shape, is_training):
+    def __init__(self, config, conv_feats, conv_feats_shape, gt_boxes, is_training):
         self.config           = config
 
         self.img_shape        = self.config.input_shape
         self.conv_feats       = conv_feats
         self.conv_feats_shape = conv_feats_shape
+
+        self.gt_boxes         = gt_boxes
 
         self.anchor_base_size = self.config.anchor_base_size
         self.anchor_scales    = np.array(config.anchor_scales)
@@ -38,12 +41,11 @@ class RPN:
         self.anchor_stride    = self.config.anchor_stride
         self.anchors_count    = len(self.anchor_scales) * len(self.anchor_ratios)
 
+        self.l1_sigma         = self.config.l1_sigma
         self.is_training      = is_training
 
-        self.build()
 
-
-    def build(self):
+    def predict(self):
         img_shape2d             = self.img_shape[:2]
         conv_feats_shape2d      = self.conv_feats_shape[:2]
 
@@ -96,7 +98,7 @@ class RPN:
         # We have to convert bbox deltas to usable bounding boxes and remove
         # redundant ones using Non Maximum Suppression (NMS).
         # TODO: Реализовать класс RPNProposal в rpn_proposal.py
-        self.proposal = RPNProposal(
+        self.rpn_proposal = RPNProposal(
             self.config, self.anchors_count
         )
 
@@ -106,14 +108,23 @@ class RPN:
 
         # We have to convert bbox deltas to usable bounding boxes and remove
         # redundant ones using Non Maximum Suppression (NMS).
-        self.proposals, self.scores = self.proposal.get_obj_proposals(
+        self.proposals, self.scores = self.rpn_proposal.get_obj_proposals(
              self.rpn_cls_prob, self.rpn_bbox_pred, all_anchors, img_shape2d
         )
 
+        self.rpn_target = RPNTarget(
+            self.config, self.anchors_count
+        )
 
-        pass
+        # calculate the target values we want to output.
+        self.rpn_cls_target, self.rpn_bbox_target, self.rpn_max_overlap = self.rpn_target.get_targets(
+            all_anchors, self.gt_boxes, img_shape2d
+        )
 
-    def loss(self, prediction_dict):
+        return self.rpn_cls_target, self.rpn_bbox_target, self.rpn_max_overlap
+
+
+    def loss(self, rpn_cls_score, rpn_cls_target, rpn_bbox_pred, rpn_bbox_target):
         """
         Returns cost for Region Proposal Network based on:
         Args:
@@ -131,12 +142,6 @@ class RPN:
         Returns:
             Multiloss between cls probability and bbox target.
         """
-
-        rpn_cls_score = prediction_dict['rpn_cls_score']
-        rpn_cls_target = prediction_dict['rpn_cls_target']
-
-        rpn_bbox_target = prediction_dict['rpn_bbox_target']
-        rpn_bbox_pred = prediction_dict['rpn_bbox_pred']
 
         with tf.variable_scope('RPNLoss'):
             # Flatten already flat Tensor for usage as boolean mask filter.
@@ -156,10 +161,9 @@ class RPN:
             cls_target = tf.one_hot(labels, depth=2)
 
             # Equivalent to log loss
-            ce_per_anchor = tf.nn.softmax_cross_entropy_with_logits(
+            cross_entropy_per_anchor = tf.nn.softmax_cross_entropy_with_logits(
                 labels=cls_target, logits=cls_score
             )
-            prediction_dict['cross_entropy_per_anchor'] = ce_per_anchor
 
             # Finally, we need to calculate the regression loss over
             # `rpn_bbox_target` and `rpn_bbox_pred`.
@@ -175,17 +179,15 @@ class RPN:
 
             # We apply smooth l1 loss as described by the Fast R-CNN paper.
             reg_loss_per_anchor = smooth_l1_loss(
-                rpn_bbox_pred, rpn_bbox_target, sigma=self._l1_sigma
+                rpn_bbox_pred, rpn_bbox_target, sigma=self.l1_sigma
             )
-
-            prediction_dict['reg_loss_per_anchor'] = reg_loss_per_anchor
 
             # Loss summaries.
             tf.summary.scalar('batch_size', tf.shape(labels)[0], ['rpn'])
             foreground_cls_loss = tf.boolean_mask(
-                ce_per_anchor, tf.equal(labels, 1))
+                cross_entropy_per_anchor, tf.equal(labels, 1))
             background_cls_loss = tf.boolean_mask(
-                ce_per_anchor, tf.equal(labels, 0))
+                cross_entropy_per_anchor, tf.equal(labels, 0))
             tf.summary.scalar(
                 'foreground_cls_loss',
                 tf.reduce_mean(foreground_cls_loss), ['rpn'])
@@ -199,10 +201,8 @@ class RPN:
             tf.summary.scalar(
                 'foreground_samples', tf.shape(rpn_bbox_target)[0], ['rpn'])
 
-            return {
-                'rpn_cls_loss': tf.reduce_sum(ce_per_anchor),
-                'rpn_reg_loss': tf.reduce_sum(reg_loss_per_anchor),
-            }
+            return tf.reduce_sum(cross_entropy_per_anchor), tf.reduce_sum(reg_loss_per_anchor)
+
 """ Generate the anchors.
 # anchor_scales = [32, 64, 128] => factor = 2.
 scales = np.array([32, 64, 128], dtype=int)

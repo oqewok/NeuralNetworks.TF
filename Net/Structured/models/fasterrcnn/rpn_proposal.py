@@ -46,7 +46,7 @@ class RPNProposal:
                             bounding boxes. Its shape should be
                             (total_proposals, 4).
                         scores: A Tensor with the probability of being an
-                            object for that proposal. Its shape should be
+                            object for that rpn_proposal. Its shape should be
                             (total_proposals, 1)
                 """
 

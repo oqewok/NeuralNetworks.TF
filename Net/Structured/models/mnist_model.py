@@ -17,7 +17,7 @@ class MnistModel(BaseModel):
 
 
     def build_model(self):
-        # here you build the tensorflow graph of any model you want and also define the loss.
+        # here you predict the tensorflow graph of any model you want and also define the loss.
 
         # Входные изображения x состоят из 2d-тензора чисел с плавающей запятой. Здесь мы изображаем его форму как [None, 784],
         # где 784 это размерность один сведенный 28 на 28 пикселя MNIST изображения, и None указывает на то, что первое

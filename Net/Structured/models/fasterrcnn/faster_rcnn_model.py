@@ -13,7 +13,7 @@ class FasterRCNNModel(BaseModel):
         self.init_saver()
 
     def build_model(self):
-        # here you build the tensorflow graph of any model you want and also define the loss.
+        # here you predict the tensorflow graph of any model you want and also define the loss.
 
         # Value of training mode
         self.is_training = self.config.is_training
@@ -43,11 +43,12 @@ class FasterRCNNModel(BaseModel):
                 self.config)
 
         # Build RPN
+        #TODO: Task 8: Передать gt_boxes в конструктор
         self.rpn = RPN(
-            self.config, self.conv_feats_tensor, self.conv_feats_shape, self.is_training_tensor
+            self.config, self.conv_feats_tensor, self.conv_feats_shape, gt_boxes=None, is_training=self.is_training_tensor
         )
 
-
+        self.rpn_cls_target, self.rpn_bbox_target, self.rpn_max_overlap = self.rpn.predict()
         pass
 
     def init_saver(self):

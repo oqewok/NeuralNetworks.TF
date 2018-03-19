@@ -10,7 +10,7 @@ class TemplateModel(BaseModel):
         self.init_saver()
 
     def build_model(self):
-        # here you build the tensorflow graph of any model you want and also define the loss.
+        # here you predict the tensorflow graph of any model you want and also define the loss.
         pass
 
     def init_saver(self):

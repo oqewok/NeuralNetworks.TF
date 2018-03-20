@@ -10,8 +10,8 @@ def build_basic_vgg16(config):
 
     H, W, C = config.input_shape
 
-    imgs = tf.placeholder(tf.float32, [None, H, W, C])
-    is_train = tf.placeholder(tf.bool)
+    imgs = tf.placeholder(tf.float32, [None, H, W, C], name="inputs")
+    is_train = tf.placeholder(tf.bool, name="is_train")
 
     conv1_1_feats = convolution(imgs, 3, 3, 64, 1, 1, 'conv1_1', init_w='xavier')
     conv1_1_feats = batch_norm(conv1_1_feats, 'bn1_1', is_train, bn, 'relu')

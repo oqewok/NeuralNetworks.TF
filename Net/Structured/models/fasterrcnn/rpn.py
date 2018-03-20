@@ -27,6 +27,8 @@ class RPN:
             Замечание: данный модуль может быть использован независимо от Faster R-CNN.
     """
     def __init__(self, config, conv_feats, conv_feats_shape, gt_boxes, is_training):
+        print("Building RPN.")
+
         self.config           = config
 
         self.img_shape        = self.config.input_shape
@@ -117,6 +119,7 @@ class RPN:
             self.rpn_cls_score, self.rpn_cls_target, self.rpn_bbox_pred, self.rpn_bbox_target
         )
 
+        print("RPN built.")
 
     def loss(self, rpn_cls_score, rpn_cls_target, rpn_bbox_pred, rpn_bbox_target):
         """

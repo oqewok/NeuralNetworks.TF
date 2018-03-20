@@ -27,6 +27,8 @@ class FasterRCNNModel(BaseModel):
     def build_model(self):
         # here you predict the tensorflow graph of any model you want and also define the loss.
 
+        print("Building model.")
+
         # Value of training mode
         self.is_training = self.config.is_training
 
@@ -34,7 +36,7 @@ class FasterRCNNModel(BaseModel):
         self.inputs_tensor      = None
 
         # GT boxes tensor.
-        self.gt_boxes = tf.placeholder(shape=[None, 4], dtype=tf.int32)
+        self.gt_boxes = tf.placeholder(shape=[None, 4], dtype=tf.int32, name="gt_boxes")
 
         # Tensor for training mode description. If true => training mode, else => evaluation mode.
         self.is_training_tensor = None
@@ -58,11 +60,9 @@ class FasterRCNNModel(BaseModel):
                 self.config)
 
         # Build RPN
-        #TODO: Task 8: Передать gt_boxes в конструктор
         self.rpn = RPN(
             self.config, self.conv_feats_tensor, self.conv_feats_shape, gt_boxes=self.gt_boxes, is_training=self.is_training_tensor
         )
-
 
         self.loss = self.rpn.loss
 
@@ -71,21 +71,13 @@ class FasterRCNNModel(BaseModel):
                 loss=self.loss, global_step=self.global_step_tensor
             )
 
-
-        # self.rpn_cls_loss, self.rpn_reg_loss = self.rpn.loss(
-        #     self.rpn.rpn_cls_score ,self.rpn_cls_target, self.rpn.rpn_bbox_pred ,self.rpn_bbox_target
-        # )
-
-
         print("Model built.")
         pass
 
 
     def init_saver(self):
-        #here you initalize the tensorflow saver that will be used in saving the checkpoints.
+        # here you initalize the tensorflow saver that will be used in saving the checkpoints.
         self.saver = tf.train.Saver(max_to_keep=self.config.max_to_keep)
-
-        pass
 
 
 """

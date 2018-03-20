@@ -1,5 +1,5 @@
-from base.base_model import BaseModel
-from utils.operations import *
+from Structured.base.base_model import BaseModel
+from Structured.utils.operations import *
 
 import tensorflow as tf
 

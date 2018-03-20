@@ -188,137 +188,137 @@ class RPNTarget:
                 x=tf.zeros(tf.shape(labels)), y=labels
             )
 
-            # Subsample positive labels if we have too many
-            def subsample_positive():
-                # Shuffle the foreground indices
-                disable_fg_inds = tf.random_shuffle(fg_inds)
-                # Select the indices that we have to ignore, this is
-                # `tf.shape(fg_inds)[0] - num_fg` because we want to get only
-                # `num_fg` foreground labels.
-                disable_place = (tf.shape(fg_inds)[0] - num_fg)
-                disable_fg_inds = disable_fg_inds[:disable_place]
-                # Order the indices for sparse_to_dense compatibility
-                disable_fg_inds, _ = tf.nn.top_k(
-                    disable_fg_inds, k=tf.shape(disable_fg_inds)[-1])
-                disable_fg_inds = tf.reverse(disable_fg_inds, [0])
-                disable_fg_inds = tf.sparse_to_dense(
-                    disable_fg_inds, tf.shape(labels, out_type=tf.int64),
-                    True, default_value=False
-                )
-                # Put -1 to ignore the anchors in the selected indices
-                return tf.where(
-                    condition=tf.squeeze(disable_fg_inds),
-                    x=tf.to_float(tf.fill(tf.shape(labels), -1)), y=labels
-                )
-
-            num_fg = tf.to_int32(self.foreground_fraction * self.minibatch_size)
-            # Get foreground indices, get True in the indices where we have a one.
-            fg_inds = tf.equal(labels, 1)
-            # We get only the indices where we have True.
-            fg_inds = tf.squeeze(tf.where(fg_inds), axis=1)
-            fg_inds_size = tf.size(fg_inds)
-            # Condition for check if we have too many positive labels.
-            subsample_positive_cond = fg_inds_size > num_fg
-            # Check the condition and subsample positive labels.
-            labels = tf.cond(
-                subsample_positive_cond,
-                true_fn=subsample_positive, false_fn=lambda: labels
+        # Subsample positive labels if we have too many
+        def subsample_positive():
+            # Shuffle the foreground indices
+            disable_fg_inds = tf.random_shuffle(fg_inds)
+            # Select the indices that we have to ignore, this is
+            # `tf.shape(fg_inds)[0] - num_fg` because we want to get only
+            # `num_fg` foreground labels.
+            disable_place = (tf.shape(fg_inds)[0] - num_fg)
+            disable_fg_inds = disable_fg_inds[:disable_place]
+            # Order the indices for sparse_to_dense compatibility
+            disable_fg_inds, _ = tf.nn.top_k(
+                disable_fg_inds, k=tf.shape(disable_fg_inds)[-1])
+            disable_fg_inds = tf.reverse(disable_fg_inds, [0])
+            disable_fg_inds = tf.sparse_to_dense(
+                disable_fg_inds, tf.shape(labels, out_type=tf.int64),
+                True, default_value=False
+            )
+            # Put -1 to ignore the anchors in the selected indices
+            return tf.where(
+                condition=tf.squeeze(disable_fg_inds),
+                x=tf.to_float(tf.fill(tf.shape(labels), -1)), y=labels
             )
 
+        num_fg = tf.to_int32(self.foreground_fraction * self.minibatch_size)
+        # Get foreground indices, get True in the indices where we have a one.
+        fg_inds = tf.equal(labels, 1)
+        # We get only the indices where we have True.
+        fg_inds = tf.squeeze(tf.where(fg_inds), axis=1)
+        fg_inds_size = tf.size(fg_inds)
+        # Condition for check if we have too many positive labels.
+        subsample_positive_cond = fg_inds_size > num_fg
+        # Check the condition and subsample positive labels.
+        labels = tf.cond(
+            subsample_positive_cond,
+            true_fn=subsample_positive, false_fn=lambda: labels
+        )
 
-            # Subsample negative labels if we have too many
-            def subsample_negative():
-                # Shuffle the background indices
-                disable_bg_inds = tf.random_shuffle(bg_inds)
 
-                # Select the indices that we have to ignore, this is
-                # `tf.shape(bg_inds)[0] - num_bg` because we want to get only
-                # `num_bg` background labels.
-                disable_place = (tf.shape(bg_inds)[0] - num_bg)
-                disable_bg_inds = disable_bg_inds[:disable_place]
-                # Order the indices for sparse_to_dense compatibility
-                disable_bg_inds, _ = tf.nn.top_k(
-                    disable_bg_inds, k=tf.shape(disable_bg_inds)[-1])
-                disable_bg_inds = tf.reverse(disable_bg_inds, [0])
-                disable_bg_inds = tf.sparse_to_dense(
-                    disable_bg_inds, tf.shape(labels, out_type=tf.int64),
-                    True, default_value=False
-                )
-                # Put -1 to ignore the anchors in the selected indices
-                return tf.where(
-                    condition=tf.squeeze(disable_bg_inds),
-                    x=tf.to_float(tf.fill(tf.shape(labels), -1)), y=labels
-                )
+        # Subsample negative labels if we have too many
+        def subsample_negative():
+            # Shuffle the background indices
+            disable_bg_inds = tf.random_shuffle(bg_inds)
 
-            # Recalculate the foreground indices after (maybe) disable some of them
-
-            # Get foreground indices, get True in the indices where we have a one.
-            fg_inds = tf.equal(labels, 1)
-            # We get only the indices where we have True.
-            fg_inds = tf.squeeze(tf.where(fg_inds), axis=1)
-            fg_inds_size = tf.size(fg_inds)
-
-            num_bg = tf.to_int32(self.minibatch_size - fg_inds_size)
-            # Get background indices, get True in the indices where we have a zero.
-            bg_inds = tf.equal(labels, 0)
-            # We get only the indices where we have True.
-            bg_inds = tf.squeeze(tf.where(bg_inds), axis=1)
-            bg_inds_size = tf.size(bg_inds)
-            # Condition for check if we have too many positive labels.
-            subsample_negative_cond = bg_inds_size > num_bg
-            # Check the condition and subsample positive labels.
-            labels = tf.cond(
-                subsample_negative_cond,
-                true_fn=subsample_negative, false_fn=lambda: labels
+            # Select the indices that we have to ignore, this is
+            # `tf.shape(bg_inds)[0] - num_bg` because we want to get only
+            # `num_bg` background labels.
+            disable_place = (tf.shape(bg_inds)[0] - num_bg)
+            disable_bg_inds = disable_bg_inds[:disable_place]
+            # Order the indices for sparse_to_dense compatibility
+            disable_bg_inds, _ = tf.nn.top_k(
+                disable_bg_inds, k=tf.shape(disable_bg_inds)[-1])
+            disable_bg_inds = tf.reverse(disable_bg_inds, [0])
+            disable_bg_inds = tf.sparse_to_dense(
+                disable_bg_inds, tf.shape(labels, out_type=tf.int64),
+                True, default_value=False
+            )
+            # Put -1 to ignore the anchors in the selected indices
+            return tf.where(
+                condition=tf.squeeze(disable_bg_inds),
+                x=tf.to_float(tf.fill(tf.shape(labels), -1)), y=labels
             )
 
-            # Return bbox targets with shape (anchors.shape[0], 4).
+        # Recalculate the foreground indices after (maybe) disable some of them
 
-            # Find the closest gt box for each anchor.
-            argmax_overlaps = tf.argmax(overlaps, axis=1)
-            # Eliminate duplicates.
-            argmax_overlaps_unique, _ = tf.unique(argmax_overlaps)
-            # Filter the gt_boxes.
-            # We get only the indices where we have "inside anchors".
-            anchor_filter_inds = tf.where(anchor_filter)
-            gt_boxes = tf.gather(gt_boxes, argmax_overlaps)
+        # Get foreground indices, get True in the indices where we have a one.
+        fg_inds = tf.equal(labels, 1)
+        # We get only the indices where we have True.
+        fg_inds = tf.squeeze(tf.where(fg_inds), axis=1)
+        fg_inds_size = tf.size(fg_inds)
 
-            bbox_targets = encode(anchors, gt_boxes)
+        num_bg = tf.to_int32(self.minibatch_size - fg_inds_size)
+        # Get background indices, get True in the indices where we have a zero.
+        bg_inds = tf.equal(labels, 0)
+        # We get only the indices where we have True.
+        bg_inds = tf.squeeze(tf.where(bg_inds), axis=1)
+        bg_inds_size = tf.size(bg_inds)
+        # Condition for check if we have too many positive labels.
+        subsample_negative_cond = bg_inds_size > num_bg
+        # Check the condition and subsample positive labels.
+        labels = tf.cond(
+            subsample_negative_cond,
+            true_fn=subsample_negative, false_fn=lambda: labels
+        )
 
-            # For the anchors that arent foreground, we ignore the bbox_targets.
-            anchor_foreground_filter = tf.equal(labels, 1)
-            bbox_targets = tf.where(
-                condition=anchor_foreground_filter,
-                x=bbox_targets, y=tf.zeros_like(bbox_targets)
-            )
+        # Return bbox targets with shape (anchors.shape[0], 4).
 
-            # We unroll "inside anchors" value for all anchors (for shape
-            # compatibility).
+        # Find the closest gt box for each anchor.
+        argmax_overlaps = tf.argmax(overlaps, axis=1)
+        # Eliminate duplicates.
+        argmax_overlaps_unique, _ = tf.unique(argmax_overlaps)
+        # Filter the gt_boxes.
+        # We get only the indices where we have "inside anchors".
+        anchor_filter_inds = tf.where(anchor_filter)
+        gt_boxes = tf.gather(gt_boxes, argmax_overlaps)
 
-            # We complete the missed indices with zeros
-            # (because scatter_nd has zeros as default).
-            bbox_targets = tf.scatter_nd(
-                indices=tf.to_int32(anchor_filter_inds),
-                updates=bbox_targets,
-                shape=tf.shape(all_anchors)
-            )
+        bbox_targets = encode(anchors, gt_boxes)
 
-            labels_scatter = tf.scatter_nd(
-                indices=tf.to_int32(anchor_filter_inds),
-                updates=labels,
-                shape=[tf.shape(all_anchors)[0]]
-            )
-            # We have to put -1 to ignore the indices with 0 generated by
-            # scatter_nd, otherwise it will be considered as background.
-            labels = tf.where(
-                condition=anchor_filter, x=labels_scatter,
-                y=tf.to_float(tf.fill(tf.shape(labels_scatter), -1))
-            )
+        # For the anchors that arent foreground, we ignore the bbox_targets.
+        anchor_foreground_filter = tf.equal(labels, 1)
+        bbox_targets = tf.where(
+            condition=anchor_foreground_filter,
+            x=bbox_targets, y=tf.zeros_like(bbox_targets)
+        )
 
-            max_overlaps = tf.scatter_nd(
-                indices=tf.to_int32(anchor_filter_inds),
-                updates=max_overlaps,
-                shape=[tf.shape(all_anchors)[0]]
-            )
+        # We unroll "inside anchors" value for all anchors (for shape
+        # compatibility).
 
-            return labels, bbox_targets, max_overlaps
+        # We complete the missed indices with zeros
+        # (because scatter_nd has zeros as default).
+        bbox_targets = tf.scatter_nd(
+            indices=tf.to_int32(anchor_filter_inds),
+            updates=bbox_targets,
+            shape=tf.shape(all_anchors)
+        )
+
+        labels_scatter = tf.scatter_nd(
+            indices=tf.to_int32(anchor_filter_inds),
+            updates=labels,
+            shape=[tf.shape(all_anchors)[0]]
+        )
+        # We have to put -1 to ignore the indices with 0 generated by
+        # scatter_nd, otherwise it will be considered as background.
+        labels = tf.where(
+            condition=anchor_filter, x=labels_scatter,
+            y=tf.to_float(tf.fill(tf.shape(labels_scatter), -1))
+        )
+
+        max_overlaps = tf.scatter_nd(
+            indices=tf.to_int32(anchor_filter_inds),
+            updates=max_overlaps,
+            shape=[tf.shape(all_anchors)[0]]
+        )
+
+        return labels, bbox_targets, max_overlaps

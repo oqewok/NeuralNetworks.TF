@@ -80,6 +80,14 @@ class CarPlatesDataProvider():
 
         yield self.images, self.bboxes
 
+
+    def next_img(self):
+        assert self.batch_size == 1
+
+        images, bboxes = next(self.next_batch())
+        self.images, self.bboxes = images[0], bboxes[0]
+
+        return self.images, self.bboxes
 '''
     @staticmethod
     def load_imgs(img_files):
@@ -88,18 +96,15 @@ class CarPlatesDataProvider():
         return imgs
 '''
 
-'''
+"""
 config = process_config("E:/Study/Mallenom/NeuralNetworks.TF/Net/Structured/configs/fastercnn.json")
 data_provider = CarPlatesDataProvider(config)
 
 batches = []
 
-for i in range(data_provider.num_batches):
-    images, bboxes = next(data_provider.next_batch())
-
-    batches.append([images, bboxes])
+images, bboxes = data_provider.next_img()
 pass
-'''
+"""
 
 '''
 Reader.get_samples_file("E:/YandexDisk/testsamples/frames/Абхазия(AB)/", "E:/train.txt")

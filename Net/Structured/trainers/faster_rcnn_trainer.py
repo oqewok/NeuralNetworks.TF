@@ -31,10 +31,11 @@ class FasterRCNNTrainer(BaseTrain):
        - run the tensorflow session
        - return any metrics you need to summarize
        """
-        img, gt_boxes = next(self.data.next_batch())  # ?????
+        img, gt_boxes = self.data.next_img() # ?????
         feed_dict = {
-            self.model.inputs_tensor: img,
+            self.model.inputs_tensor: [img],
             self.model.gt_boxes: gt_boxes,
+            self.model.is_training : True,
         }
 
         _, loss = self.sess.run(

@@ -18,4 +18,4 @@ def make_samples_file(config_file):
         os.path.join(config.train_files_directory,"test.txt")))
 
 
-make_samples_file("E:/Study/Mallenom/NeuralNetworks.TF/Net/Structured/configs/fastercnn.json")
+make_samples_file("C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\\Structured\\configs\\fastercnn.json")

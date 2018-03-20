@@ -76,7 +76,6 @@ class RPN:
         self.rpn_cls_score = tf.reshape(
             self.rpn_cls_score_original, [-1, 2]
         )
-        #self.rpn_cls_score = tf.reshape(self.rpn_cls_score_original, [-1, 2])
 
         # Now that `rpn_cls_score` has shape (H * W * num_anchors, 2), we apply
         # softmax to the last dim.
@@ -87,11 +86,9 @@ class RPN:
         self.rpn_bbox_pred = tf.reshape(
             self.rpn_bbox_pred_original, [-1, 4]
         )
-        #self.rpn_bbox_pred = tf.reshape(self.rpn_bbox_pred_original, [-1, 4])
 
         # We have to convert bbox deltas to usable bounding boxes and remove
         # redundant ones using Non Maximum Suppression (NMS).
-        # TODO: Реализовать класс RPNProposal в rpn_proposal.py
         self.rpn_proposal = RPNProposal(
             self.config, self.anchors_count
         )

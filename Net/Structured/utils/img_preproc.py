@@ -10,17 +10,20 @@ from skimage import transform
 def resize_img(image, new_shape, bboxes=None, as_int=True):
     old_shape = image.shape
 
-    image = transform.resize(
-            image, new_shape, mode='reflect', preserve_range=as_int)
+    try:
+        image = transform.resize(
+                image, new_shape, mode='reflect', preserve_range=as_int)
 
-    if as_int:
-        image = np.array(image, int)
+        if as_int:
+            image = np.array(image, int)
 
-    if bboxes is not None:
-        bboxes = adjust_bboxes(bboxes, old_shape, new_shape)
-        return image, bboxes
+        if bboxes is not None:
+            bboxes = adjust_bboxes(bboxes, old_shape, new_shape)
+            return image, bboxes
 
-    return image
+        return image
+    except IndexError:
+        print("it's a trap!")
 
 
 def adjust_bboxes(bboxes, old_shape, new_shape):

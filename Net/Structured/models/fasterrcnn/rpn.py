@@ -49,14 +49,6 @@ class RPN:
 
     def predict(self):
         img_shape2d             = self.img_shape[:2]
-        conv_feats_shape2d      = self.conv_feats_shape[:2]
-
-        # TODO: Переделать генерацию "якорей" в anchors.py.
-        # """ Generate the anchors. """
-        #self.all_anchors        = generate_anchors(
-        #     img_shape2d, conv_feats_shape2d, self.anchor_scales, self.anchor_ratios)
-
-        #self.total_anchor_count = np.count_nonzero(self.anchors, axis=(0, 1, 2)) // 4
 
         # Get the RPN feature using a simple conv net. Activation function
         # can be set to empty.

@@ -27,7 +27,7 @@ class MarkupParser:
                     x.append(int(point.attrib["X"]))
                     y.append(int(point.attrib["Y"]))
 
-                xcenter = abs(int(
+                '''xcenter = abs(int(
                     0.5 * (max(x) + min(x))
                 ))
                 ycenter = abs(int(
@@ -41,6 +41,13 @@ class MarkupParser:
                 ))
 
                 plates.append(np.stack((xcenter, ycenter, width, height)))
+                '''
+                xmin = np.min(x)
+                ymin = np.min(y)
+                xmax = np.max(x)
+                ymax = np.max(y)
+
+                plates.append(np.stack((xmin, ymin, xmax, ymax)))
 
         plates = np.array(plates, dtype=int)
 

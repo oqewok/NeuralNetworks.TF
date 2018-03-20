@@ -18,21 +18,19 @@ class FasterRCNNTrainer(BaseTrain):
         loop = tqdm(range(self.config.num_iter_per_epoch))
         for i in loop:
             loss = self.train_step()
-
             losses.append(loss)
-
-            if i % 100 == 0:
-                print("loss = ", loss)
 
         mean_loss = np.mean(losses)
         print("Epoch loss = ", mean_loss)
 
         cur_it = self.model.global_step_tensor.eval(self.sess)
+
         summaries_dict = {}
         summaries_dict['loss'] = mean_loss
         self.logger.summarize(cur_it, summaries_dict=summaries_dict)
 
-        self.model.saver.save(self.sess, self.config.checkpoint_dir)
+        # TODO: fix: ValueError: 'latest_filename' collides with 'save_path': 'checkpoint' and '../experiments\faster-rcnn\checkpoint'
+        #self.model.saver.save(self.sess, self.config.checkpoint_dir)
 
 
     def train_step(self):

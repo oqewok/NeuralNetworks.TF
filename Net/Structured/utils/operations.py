@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.python.training import moving_averages
 
 
-def weight(name, shape, init='normal', range=0.1, stddev=0.01, init_val=None, group_id=0):
+def weight(name, shape, init='normal', range=0.1, stddev=0.01, scale = 1.0, init_val=None, group_id=0):
     """ Get a weight variable. """
     if init_val != None:
         initializer = tf.constant_initializer(init_val)
@@ -12,6 +12,8 @@ def weight(name, shape, init='normal', range=0.1, stddev=0.01, init_val=None, gr
         initializer = tf.random_uniform_initializer(-range, range)
     elif init == 'normal':
         initializer = tf.random_normal_initializer(stddev=stddev)
+    elif init == 'variance_scaling':
+        initializer = tf.variance_scaling_initializer(scale=scale, mode="FAN_AVG", distribution="uniform")
     elif init == 'he':
         fan_in, _ = _get_dims(shape)
         std = math.sqrt(2.0 / fan_in)

@@ -1,7 +1,7 @@
 from Structured.base.base_model import BaseModel
 from Structured.nets.vgg16 import build_basic_vgg16
 from Structured.models.fasterrcnn.rpn import RPN
-from Structured.models.fasterrcnn.roi_pooling import ROIPooling
+from Structured.models.fasterrcnn.rcnn import RCNN
 
 import tensorflow as tf
 
@@ -70,19 +70,55 @@ class FasterRCNNModel(BaseModel):
         # Predicted RPN objects' bounding boxes
         self.rpn_roi_proposals  = self.rpn.proposals
 
-        # RPN loss
-        self.rpn_loss = self.rpn.loss
 
-        self.roi_pool = ROIPooling(
-            self.config, self.rpn_roi_proposals, self.conv_feats_tensor, self.config.input_shape
+        # RCNN
+        proposals = tf.stop_gradient(self.rpn_roi_proposals)
+
+        self.rcnn = RCNN(
+            self.config, self.conv_feats_tensor, self.rpn_roi_proposals,
+            self.config.input_shape, gt_boxes=self.gt_boxes, is_training=self.is_training_tensor
         )
 
-        self.roi_pooled_proposals = self.roi_pool.roi_pooled_features
+        # Predicted RCNN
+        self.objects                = self.rcnn.objects
+        self.proposal_label         = self.rcnn.proposal_label
+        self.proposal_label_prob    = self.rcnn.proposal_label_prob
 
-        if self.optimizer_name == 'adam':
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(
-                loss=self.rpn_loss, global_step=self.global_step_tensor
-            )
+        with tf.name_scope('losses'):
+            # RPN losses
+            self.rpn_cls_loss, self.rpn_reg_loss = self.rpn.rpn_cls_loss, self.rpn.rpn_reg_loss
+
+            #RCNN losses
+            self.rcnn_cls_loss, self.rcnn_reg_loss = self.rcnn.rcnn_cls_loss, self.rcnn.rcnn_reg_loss
+
+            all_losses_dict = {
+                    "rpn_cls_loss"  : self.rpn_cls_loss,
+                    "rpn_reg_loss"  : self.rpn_reg_loss,
+                    "rcnn_cls_loss" : self.rcnn_cls_loss,
+                    "rcnn_reg_loss" : self.rcnn_reg_loss
+            }
+
+            for loss_name, loss_tensor in all_losses_dict:
+                tf.summary.scalar(
+                    loss_name, loss_tensor,
+                    collections=['fastercnn_losses']
+                )
+                # We add losses to the losses collection instead of manually
+                # summing them just in case somebody wants to use it in another
+                # place.
+                tf.losses.add_loss(loss_tensor)
+
+                # Regularization loss is automatically saved by TensorFlow, we log
+                # it differently so we can visualize it independently.
+
+            self.total_loss = tf.losses.get_total_loss()
+
+
+            if self.optimizer_name == 'adam':
+                self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(
+                    loss=self.total_loss, global_step=self.global_step_tensor
+                )
+
 
         print("Model built.")
         pass

@@ -114,8 +114,8 @@ class RPN:
             all_anchors, self.gt_boxes, img_shape2d
         )
 
-        # Define loss tensor
-        self.loss = self.loss(
+        # Define loss tensors
+        self.rpn_cls_loss, self.rpn_reg_loss = self.loss(
             self.rpn_cls_score, self.rpn_cls_target, self.rpn_bbox_pred, self.rpn_bbox_target
         )
 
@@ -182,11 +182,6 @@ class RPN:
             rpn_cls_loss = tf.reduce_sum(cross_entropy_per_anchor)
             rpn_reg_loss = tf.reduce_sum(reg_loss_per_anchor)
 
-            tf.losses.add_loss(rpn_cls_loss)
-            tf.losses.add_loss(rpn_reg_loss)
-
-            total_loss = tf.losses.get_total_loss()
-
             # Loss summaries.
             tf.summary.scalar('batch_size', tf.shape(labels)[0], ['rpn'])
             foreground_cls_loss = tf.boolean_mask(
@@ -206,8 +201,7 @@ class RPN:
             tf.summary.scalar(
                 'foreground_samples', tf.shape(rpn_bbox_target)[0], ['rpn'])
 
-            #return rpn_cls_loss, rpn_reg_loss
-            return total_loss
+            return rpn_cls_loss, rpn_reg_loss
 
 """ Generate the anchors.
 # anchor_scales = [32, 64, 128] => factor = 2.

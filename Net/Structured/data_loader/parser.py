@@ -47,7 +47,7 @@ class MarkupParser:
                 xmax = np.max(x)
                 ymax = np.max(y)
 
-                plates.append(np.stack((xmin, ymin, xmax, ymax)))
+                plates.append(np.stack((xmin, ymin, xmax, ymax, 1)))
 
         plates = np.array(plates, dtype=int)
 

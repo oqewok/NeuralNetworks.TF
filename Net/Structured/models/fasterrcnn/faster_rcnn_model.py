@@ -1,6 +1,7 @@
 from Structured.base.base_model import BaseModel
 from Structured.nets.vgg16 import build_basic_vgg16
 from Structured.models.fasterrcnn.rpn import RPN
+from Structured.models.fasterrcnn.roi_pooling import ROIPooling
 
 import tensorflow as tf
 
@@ -64,11 +65,23 @@ class FasterRCNNModel(BaseModel):
             self.config, self.conv_feats_tensor, self.conv_feats_shape, gt_boxes=self.gt_boxes, is_training=self.is_training_tensor
         )
 
-        self.loss = self.rpn.loss
+        # Predicted RPN objectness scores
+        self.rpn_cls_scores     = self.rpn.scores
+        # Predicted RPN objects' bounding boxes
+        self.rpn_roi_proposals  = self.rpn.proposals
+
+        # RPN loss
+        self.rpn_loss = self.rpn.loss
+
+        self.roi_pool = ROIPooling(
+            self.config, self.rpn_roi_proposals, self.conv_feats_tensor, self.config.input_shape
+        )
+
+        self.roi_pooled_proposals = self.roi_pool.roi_pooled_features
 
         if self.optimizer_name == 'adam':
             self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(
-                loss=self.loss, global_step=self.global_step_tensor
+                loss=self.rpn_loss, global_step=self.global_step_tensor
             )
 
         print("Model built.")

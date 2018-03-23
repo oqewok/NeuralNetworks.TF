@@ -71,7 +71,7 @@ class RCNNTarget:
         proposals_label_shape = tf.gather(tf.shape(proposals), [0])
         proposals_label = tf.fill(
             dims=proposals_label_shape,
-            value=-1.
+            value=-1.0
         )
 
         # For each overlap there is three possible outcomes for labelling:
@@ -107,7 +107,7 @@ class RCNNTarget:
         # background.
         best_fg_labels_for_proposals = tf.add(
             tf.gather(gt_boxes[:, 4], overlaps_best_gt_idxs),
-            1.
+            1
         )
         iou_is_fg = tf.greater_equal(
             max_overlaps, self.foreground_threshold

@@ -13,7 +13,7 @@ def weight(name, shape, init='normal', range=0.1, stddev=0.01, scale = 1.0, init
     elif init == 'normal':
         initializer = tf.random_normal_initializer(stddev=stddev)
     elif init == 'variance_scaling':
-        initializer = tf.variance_scaling_initializer(scale=scale, mode="FAN_AVG", distribution="uniform")
+        initializer = tf.variance_scaling_initializer(scale=scale, mode="fan_avg", distribution="uniform")
     elif init == 'he':
         fan_in, _ = _get_dims(shape)
         std = math.sqrt(2.0 / fan_in)

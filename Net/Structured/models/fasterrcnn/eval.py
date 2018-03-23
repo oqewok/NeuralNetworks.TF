@@ -16,7 +16,7 @@ path = os.path.join(
     "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\faster-rcnn\\checkpoint\\faster-rcnn.meta"
 )
 
-image = io.imread("C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\images\\#15935-изображения_werkhaus\\8000D4CC_20170814_08102220_0_A055CX73_RU_N01_a000aa00.jpg")
+image = io.imread("C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\images\\Казахстан(KZ)\\full_images_KZ\\image33764.jpg")
 img = resize_img(image, config.input_shape, as_int=True)
 
 
@@ -48,9 +48,9 @@ with tf.Session() as sess:
     "show img"
     fig, ax = plt.subplots(1)
 
-    ax.imshow(image)
+    ax.imshow(img)
 
-    for i in range(1):
+    for i in range(5):
         rect = patches.Rectangle(
             (result[i][0], result[i][1]), result[i][2], result[i][3], linewidth=1,
             edgecolor='r', facecolor='none')

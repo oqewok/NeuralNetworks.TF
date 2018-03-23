@@ -37,7 +37,7 @@ class FasterRCNNModel(BaseModel):
         self.inputs_tensor      = None
 
         # GT boxes tensor.
-        self.gt_boxes = tf.placeholder(shape=[None, 4], dtype=tf.int32, name="gt_boxes")
+        self.gt_boxes = tf.placeholder(shape=[None, 5], dtype=tf.float32, name="gt_boxes")
 
         # Tensor for training mode description. If true => training mode, else => evaluation mode.
         self.is_training_tensor = None
@@ -72,7 +72,7 @@ class FasterRCNNModel(BaseModel):
 
 
         # RCNN
-        proposals = tf.stop_gradient(self.rpn_roi_proposals)
+        #proposals = tf.stop_gradient(self.rpn_roi_proposals)
 
         self.rcnn = RCNN(
             self.config, self.conv_feats_tensor, self.rpn_roi_proposals,
@@ -84,13 +84,16 @@ class FasterRCNNModel(BaseModel):
         self.proposal_label         = self.rcnn.proposal_label
         self.proposal_label_prob    = self.rcnn.proposal_label_prob
 
+
         with tf.name_scope('losses'):
             # RPN losses
             self.rpn_cls_loss, self.rpn_reg_loss = self.rpn.rpn_cls_loss, self.rpn.rpn_reg_loss
 
             #RCNN losses
             self.rcnn_cls_loss, self.rcnn_reg_loss = self.rcnn.rcnn_cls_loss, self.rcnn.rcnn_reg_loss
-
+            self.loss = self.rcnn_reg_loss
+            #self.loss = tf.add(self.rpn_cls_loss + self.rpn_reg_loss, self.rcnn_cls_loss + self.rcnn_reg_loss)
+            """
             all_losses_dict = {
                     "rpn_cls_loss"  : self.rpn_cls_loss,
                     "rpn_reg_loss"  : self.rpn_reg_loss,
@@ -98,7 +101,7 @@ class FasterRCNNModel(BaseModel):
                     "rcnn_reg_loss" : self.rcnn_reg_loss
             }
 
-            for loss_name, loss_tensor in all_losses_dict:
+            for loss_name, loss_tensor in all_losses_dict.items():
                 tf.summary.scalar(
                     loss_name, loss_tensor,
                     collections=['fastercnn_losses']
@@ -111,14 +114,12 @@ class FasterRCNNModel(BaseModel):
                 # Regularization loss is automatically saved by TensorFlow, we log
                 # it differently so we can visualize it independently.
 
-            self.total_loss = tf.losses.get_total_loss()
-
-
-            if self.optimizer_name == 'adam':
-                self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(
-                    loss=self.total_loss, global_step=self.global_step_tensor
-                )
-
+            self.loss = tf.losses.get_total_loss()
+        """
+        if self.optimizer_name == 'adam':
+            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(
+                loss=self.rcnn_cls_loss, global_step=self.global_step_tensor
+            )
 
         print("Model built.")
         pass

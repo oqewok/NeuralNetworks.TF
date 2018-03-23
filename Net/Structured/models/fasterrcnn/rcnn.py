@@ -6,6 +6,7 @@ from Structured.models.fasterrcnn.rcnn_target import RCNNTarget
 from Structured.utils.losses import smooth_l1_loss
 from Structured.utils.operations import *
 
+
 class RCNN:
     """RCNN: Region-based Convolutional Neural Network.
         Given region proposals (bounding boxes on an image) and a feature map of
@@ -29,15 +30,14 @@ class RCNN:
     pass
 
     def __init__(self, config, conv_feature_map, proposals, img_shape, gt_boxes=None, is_training=False):
+        self.config = config
+        self.num_classes = self.config.num_classes
 
-        self.config         = config
-        self.num_classes    = self.config.num_classes
-
-        self.l1_sigma       = self.config.rcnn_l1_sigma
-        self.use_mean       = self.config.use_mean
+        self.l1_sigma = self.config.rcnn_l1_sigma
+        self.use_mean = self.config.use_mean
+        self.dropout_prob = self.config.dropout
 
         self.build(conv_feature_map, proposals, img_shape, gt_boxes, is_training)
-
 
     def build(self, conv_feature_map, proposals, img_shape, gt_boxes, is_training):
         """
@@ -79,7 +79,7 @@ class RCNN:
             # "memory-friendly" Tensor.
             self.roi_pooled_features = tf.reduce_mean(self.roi_pooled_features, axis=(1, 2))
 
-        self.build_fc_layers(self.roi_pooled_features)
+        self.build_fc_layers(self.roi_pooled_features, is_training)
 
         # Get final objects proposals based on the probabilty, the offsets and
         # the original proposals.
@@ -99,39 +99,36 @@ class RCNN:
 
         # Define loss tensors
         self.rcnn_cls_loss, self.rcnn_reg_loss = self.loss(
-            self.cls_scores, self.cls_prob, self.cls_target, self.bbox_offsets, self.bbox_offsets_target
+            self.cls_scores, self.cls_target, self.bbox_offsets, self.bbox_offsets_target
         )
         print("RCNN built.")
 
-
-    def build_fc_layers(self, proposals):
+    def build_fc_layers(self, proposals, is_training):
         # We define layers as an array since they are simple fully connected
         # ones and it should be easy to tune it from the network config.
 
         # Compute the RoI classification results
         fc6_feats = fully_connected(proposals, 4096, 'rcn_fc6', init_w='variance_scaling', group_id=2)
         fc6_feats = nonlinear(fc6_feats, 'relu')
-        fc6_feats = dropout(fc6_feats, 0.5, self.config.is_train)
+        fc6_feats = dropout(fc6_feats, self.dropout_prob, is_training)
 
         fc7_feats = fully_connected(fc6_feats, 4096, 'rcn_fc7', init_w='variance_scaling', group_id=2)
         fc7_feats = nonlinear(fc7_feats, 'relu')
-        fc7_feats = dropout(fc7_feats, 0.5, self.config.is_train)
+        fc7_feats = dropout(fc7_feats, self.dropout_prob, is_training)
 
         # We define the classifier layer having a num_classes + 1 background
         # since we want to be able to predict if the proposal is background as
         # well.
         self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
-        self.cls_prob   = tf.nn.softmax(self.cls_scores)
+        self.cls_prob = tf.nn.softmax(self.cls_scores)
 
         # The bounding box adjustment layer has 4 times the number of classes
         # We choose which to use depending on the output of the classifier
         # layer
         self.bbox_offsets = fully_connected(fc7_feats, self.num_classes * 4, 'fc_bbox', init_w='normal', group_id=2)
 
-        pass
 
-
-    def loss(self, cls_score, cls_prob, cls_target, bbox_offsets, bbox_offsets_target):
+    def loss(self, cls_score, cls_target, bbox_offsets, bbox_offsets_target):
         """
                 Returns cost for RCNN based on:
                 Args:
@@ -140,8 +137,6 @@ class RCNN:
                             cls_score: shape (num_proposals, num_classes + 1)
                                 Has the class scoring for each the proposals. Classes
                                 are 1-indexed with 0 being the background.
-                            cls_prob: shape (num_proposals, num_classes + 1)
-                                Application of softmax on cls_score.
                             bbox_offsets: shape (num_proposals, num_classes * 4)
                                 Has the offset for each proposal for each class.
                                 We have to compare only the proposals labeled with the
@@ -180,7 +175,7 @@ class RCNN:
             cls_score_labeled = tf.boolean_mask(
                 cls_score, not_ignored, name='cls_score_labeled')
             # cls_prob_labeled = tf.boolean_mask(
-            #    cls_prob, not_ignored, name='cls_prob_labeled')
+            #     cls_prob, not_ignored, name='cls_prob_labeled')
             cls_target_labeled = tf.boolean_mask(
                 cls_target, not_ignored, name='cls_target_labeled')
 
@@ -221,6 +216,7 @@ class RCNN:
             # `num_classes` + 1 classes.
             # for making `one_hot` with depth `num_classes` to work we need
             # to lower them to make them 0-index.
+
             cls_target_labeled = cls_target_labeled - 1
 
             cls_target_one_hot = tf.one_hot(
@@ -257,6 +253,3 @@ class RCNN:
             rcnn_reg_loss = tf.reduce_mean(reg_loss_per_proposal)
 
             return rcnn_cls_loss, rcnn_reg_loss
-
-
-

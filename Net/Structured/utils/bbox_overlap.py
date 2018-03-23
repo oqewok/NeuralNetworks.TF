@@ -19,6 +19,9 @@ def bbox_overlap(bboxes1, bboxes2):
         in [i, j].
     """
     with tf.name_scope('bbox_overlap'):
+        bboxes1 = tf.cast(bboxes1, tf.float32)
+        bboxes2 = tf.cast(bboxes2, tf.float32)
+
         x11, y11, x12, y12 = tf.split(bboxes1, 4, axis=1)
         x21, y21, x22, y22 = tf.split(bboxes2, 4, axis=1)
 

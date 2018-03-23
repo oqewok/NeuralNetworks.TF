@@ -122,7 +122,7 @@ class RPNTarget:
 
         # Intersection over union (IoU) overlap between the anchors and the
         # ground truth boxes.
-        overlaps = bbox_overlap(tf.to_float(anchors), tf.to_float(gt_boxes))
+        overlaps = bbox_overlap(anchors, gt_boxes)
 
         # Generate array with the IoU value of the closest GT box for each
         # anchor.

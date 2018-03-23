@@ -47,7 +47,7 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
 
     for bbox in bboxes_float:
         #x_min, y_min, x_max, y_max, label = tf.unstack(bboxes_float, axis=1)
-        x_min, y_min, x_max, y_max = bbox
+        x_min, y_min, x_max, y_max, label = bbox
 
         x_min = x_min / old_width
         y_min = y_min / old_height
@@ -60,7 +60,7 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
         x_max = x_max * new_width
         y_max = y_max * new_height
 
-        b = np.stack((x_min, y_min, x_max, y_max))
+        b = np.stack((x_min, y_min, x_max, y_max, label))
         result_boxes.append(np.array(b, dtype=int))
 
     # Concat points and label to return a [num_bboxes, 5] tensor.

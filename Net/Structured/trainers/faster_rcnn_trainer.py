@@ -1,6 +1,8 @@
 from Structured.base.base_train import BaseTrain
 from tqdm import tqdm
 
+from tensorflow.python import debug as tf_debug
+
 import numpy as np
 import os
 
@@ -56,8 +58,13 @@ class FasterRCNNTrainer(BaseTrain):
             self.model.is_training_tensor: self.model.is_training,
         }
 
-        _, loss = self.sess.run(
-            [self.model.optimizer, self.model.loss], feed_dict=feed_dict
+        #self.sess = tf_debug.TensorBoardDebugWrapperSession(self.sess, "1080Ti:8908")
+
+        _, rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss = self.sess.run(
+            [self.model.optimizer, self.model.rpn_cls_loss, self.model.rpn_reg_loss, self.model.rcnn_cls_loss, self.model.rcnn_reg_loss],
+            feed_dict=feed_dict
         )
+
+        loss = rpn_cls_loss + rpn_reg_loss + rcnn_cls_loss + rcnn_reg_loss
 
         return loss

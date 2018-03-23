@@ -91,8 +91,8 @@ class FasterRCNNModel(BaseModel):
 
             #RCNN losses
             self.rcnn_cls_loss, self.rcnn_reg_loss = self.rcnn.rcnn_cls_loss, self.rcnn.rcnn_reg_loss
-            self.loss = self.rcnn_reg_loss
-            #self.loss = tf.add(self.rpn_cls_loss + self.rpn_reg_loss, self.rcnn_cls_loss + self.rcnn_reg_loss)
+            #self.loss = self.rcnn_reg_loss
+            self.loss = tf.add(self.rpn_cls_loss + self.rpn_reg_loss, self.rcnn_cls_loss + self.rcnn_reg_loss)
             """
             all_losses_dict = {
                     "rpn_cls_loss"  : self.rpn_cls_loss,

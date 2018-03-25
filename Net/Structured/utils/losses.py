@@ -24,3 +24,23 @@ def smooth_l1_loss(bbox_prediction, bbox_target, sigma=3.0):
         ), [1]
     )
     return bbox_loss
+
+
+if __name__ == '__main__':
+    bbox_prediction_tf = tf.placeholder(tf.float32)
+    bbox_target_tf = tf.placeholder(tf.float32)
+    loss_tf = smooth_l1_loss(bbox_prediction_tf, bbox_target_tf)
+    with tf.Session() as sess:
+        loss = sess.run(
+            loss_tf,
+            feed_dict={
+                bbox_prediction_tf: [
+                    [0.47450006, -0.80413032, -0.26595005, 0.17124325],
+                ],
+                bbox_target_tf: [
+                    [0.10058594, 0.07910156, 0.10555581, -0.1224325],
+                    [0.235235, -0.23523, 0.8786, 0.02341]
+                ],
+            })
+
+        pass

@@ -18,6 +18,8 @@ class FasterRCNNModel(BaseModel):
             staircase=True
         )
 
+        self.momentum       = self.config.momentum
+
         self.optimizer_name = self.config.optimizer
         self.optimizer      = None
 
@@ -92,8 +94,7 @@ class FasterRCNNModel(BaseModel):
             #RCNN losses
             self.rcnn_cls_loss, self.rcnn_reg_loss = self.rcnn.rcnn_cls_loss, self.rcnn.rcnn_reg_loss
             #self.loss = self.rcnn_reg_loss
-            self.loss = tf.add(self.rpn_cls_loss + self.rpn_reg_loss, self.rcnn_cls_loss + self.rcnn_reg_loss)
-            """
+
             all_losses_dict = {
                     "rpn_cls_loss"  : self.rpn_cls_loss,
                     "rpn_reg_loss"  : self.rpn_reg_loss,
@@ -115,11 +116,22 @@ class FasterRCNNModel(BaseModel):
                 # it differently so we can visualize it independently.
 
             self.loss = tf.losses.get_total_loss()
-        """
+
+        optimizer = None
         if self.optimizer_name == 'adam':
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(
-                loss=self.rcnn_cls_loss, global_step=self.global_step_tensor
+            optimizer = tf.train.AdamOptimizer(
+                learning_rate=self.learning_rate
             )
+        elif self.optimizer_name == 'momentum':
+            optimizer = tf.train.MomentumOptimizer(
+                learning_rate=self.learning_rate,
+                momentum=self.momentum
+            )
+
+        self.optimizer = optimizer.minimize(
+            loss=self.rcnn_cls_loss, global_step=self.global_step_tensor
+        )
+
 
         print("Model built.")
         pass

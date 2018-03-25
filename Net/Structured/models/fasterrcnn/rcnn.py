@@ -119,7 +119,8 @@ class RCNN:
         # We define the classifier layer having a num_classes + 1 background
         # since we want to be able to predict if the proposal is background as
         # well.
-        self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
+        self.cls_scores = fully_connected(fc7_feats, self.num_classes, 'fc_cls', init_w='normal', group_id=2)
+        #self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
         self.cls_prob = tf.nn.softmax(self.cls_scores)
 
         # The bounding box adjustment layer has 4 times the number of classes
@@ -165,7 +166,7 @@ class RCNN:
                 cls_target, tf.int32
             )
 
-            # First we need to calculate the log loss betweetn cls_prob and
+            # First we need to calculate the log loss between cls_prob and
             # cls_target
 
             # We only care for the targets that are >= 0
@@ -186,7 +187,8 @@ class RCNN:
 
             # Transform to one-hot vector
             cls_target_one_hot = tf.one_hot(
-                cls_target_labeled, depth=self.num_classes + 1,
+                #cls_target_labeled, depth=self.num_classes + 1,
+                cls_target_labeled, depth=self.num_classes,
                 name='cls_target_one_hot'
             )
 
@@ -217,7 +219,7 @@ class RCNN:
             # for making `one_hot` with depth `num_classes` to work we need
             # to lower them to make them 0-index.
 
-            cls_target_labeled = cls_target_labeled - 1
+            #cls_target_labeled = cls_target_labeled - 1
 
             cls_target_one_hot = tf.one_hot(
                 cls_target_labeled, depth=self.num_classes,

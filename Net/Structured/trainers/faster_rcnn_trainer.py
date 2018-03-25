@@ -20,22 +20,49 @@ class FasterRCNNTrainer(BaseTrain):
        -loop on the number of iterations in the config and call the train step
        -add any summaries you want using the summary
         """
-        losses = []
+        rpn_cls_losses = []
+        rpn_reg_losses = []
+        rcnn_cls_losses = []
+        rcnn_reg_losses = []
+        total_losses = []
         loop = tqdm(range(self.num_iter_per_epoch))
 
         for i in loop:
-            loss = self.train_step()
-            losses.append(loss)
+            rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss = self.train_step()
+            total_loss = rpn_cls_loss + rpn_reg_loss + rcnn_cls_loss + rcnn_reg_loss
+
+            rpn_cls_losses.append(rpn_cls_loss)
+            rpn_reg_losses.append(rpn_reg_loss)
+            rcnn_cls_losses.append(rcnn_cls_loss)
+            rcnn_reg_losses.append(rcnn_reg_loss)
+
+            total_losses.append(total_loss)
 
         loop.close()
 
-        mean_loss = np.mean(losses)
-        print("Epoch loss = ", mean_loss)
+        mean_rpn_cls_loss = np.mean(rpn_cls_losses)
+        mean_rpn_reg_loss = np.mean(rpn_reg_losses)
+        mean_rcnn_cls_loss = np.mean(rcnn_cls_losses)
+        mean_rcnn_reg_loss = np.mean(rcnn_reg_losses)
+
+        mean_total_loss = np.mean(total_losses)
+
+        print("\nrpn cls loss:", mean_rpn_cls_loss)
+        print("\nrpn reg loss:", mean_rpn_reg_loss)
+        print("\nrcnn cls loss:", mean_rcnn_cls_loss)
+        print("\nrcnn reg loss:", mean_rcnn_reg_loss)
+        print("\ntotal loss:", mean_rpn_cls_loss)
 
         cur_it = self.model.global_step_tensor.eval(self.sess)
 
-        summaries_dict = {}
-        summaries_dict['loss'] = mean_loss
+        summaries_dict = {
+            'rpn_cls_loss'      : mean_rpn_cls_loss,
+            'rpn_reg_losses'    : mean_rpn_reg_loss,
+            'rcnn_cls_losses'   : mean_rcnn_cls_loss,
+            'rcnn_reg_losses'   : mean_rcnn_reg_loss,
+            'total_loss'        : mean_total_loss
+        }
+
         self.logger.summarize(cur_it, summaries_dict=summaries_dict)
 
         self.model.saver.save(
@@ -61,10 +88,14 @@ class FasterRCNNTrainer(BaseTrain):
         #self.sess = tf_debug.TensorBoardDebugWrapperSession(self.sess, "1080Ti:8908")
 
         _, rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss = self.sess.run(
-            [self.model.optimizer, self.model.rpn_cls_loss, self.model.rpn_reg_loss, self.model.rcnn_cls_loss, self.model.rcnn_reg_loss],
+            [
+                self.model.optimizer,
+                self.model.rpn_cls_loss,
+                self.model.rpn_reg_loss,
+                self.model.rcnn_cls_loss,
+                self.model.rcnn_reg_loss
+            ],
             feed_dict=feed_dict
         )
 
-        loss = rpn_cls_loss + rpn_reg_loss + rcnn_cls_loss + rcnn_reg_loss
-
-        return loss
+        return rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss

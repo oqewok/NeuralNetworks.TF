@@ -32,8 +32,8 @@ with tf.Session() as sess:
 
     graph       = tf.get_default_graph()
     inputs      = graph.get_tensor_by_name('inputs:0')
-    bboxes      = graph.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
-    scores      = graph.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
+    bboxes      = graph.get_tensor_by_name('rcnn_prediction/bboxes:0')
+    scores      = graph.get_tensor_by_name('rcnn_prediction/labels:0')
     is_train    = graph.get_tensor_by_name('is_train:0')
 
     sess.run(tf.global_variables_initializer())

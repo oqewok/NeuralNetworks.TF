@@ -71,7 +71,8 @@ class RCNNProposal:
         for class_id in range(self.num_classes):
             # Apply the class-specific transformations to the proposals to
             # obtain the current class' prediction.
-            class_prob          = cls_prob[:, class_id + 1]  # 0 is background class.
+            class_prob          = cls_prob[:, class_id]  # 0 is background class.
+            #class_prob          = cls_prob[:, class_id + 1]  # 0 is background class.
             class_bboxes        = bbox_pred[:, (4 * class_id):(4 * class_id + 4)]
 
             raw_class_objects   = decode(
@@ -133,7 +134,7 @@ class RCNNProposal:
         # stacked on top of each other
         objects = tf.concat(selected_boxes, axis=0)
         proposal_label = tf.concat(selected_labels, axis=0)
-        proposal_label_prob = tf.concat(selected_probs, axis=0)
+        proposal_label_prob = tf.concat(selected_probs, axis=0, name='predicted_labels_prob')
 
         tf.summary.histogram(
             'proposal_cls_scores', proposal_label_prob, ['rcnn']
@@ -144,9 +145,10 @@ class RCNNProposal:
             self.total_max_detections,
             tf.shape(proposal_label_prob)[0]
         )
-        top_k                       = tf.nn.top_k(proposal_label_prob, k=k)
-        top_k_proposal_label_prob   = top_k.values
-        top_k_objects               = tf.gather(objects, top_k.indices)
-        top_k_proposal_label        = tf.gather(proposal_label, top_k.indices)
+        with tf.name_scope("rcnn_prediction"):
+            top_k                       = tf.nn.top_k(proposal_label_prob, k=k)
+            top_k_proposal_label_prob   = top_k.values
+            top_k_objects               = tf.gather(objects, top_k.indices, name='bboxes')
+            top_k_proposal_label        = tf.gather(proposal_label, top_k.indices, name='labels')
 
-        return top_k_objects, top_k_proposal_label, top_k_proposal_label_prob
+            return top_k_objects, top_k_proposal_label, top_k_proposal_label_prob

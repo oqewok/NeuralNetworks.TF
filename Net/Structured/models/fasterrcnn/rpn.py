@@ -55,7 +55,7 @@ class RPN:
         # Get the RPN feature using a simple conv net. Activation function
         # can be set to empty.
         self.rpn_conv_feature       = convolution(
-            self.conv_feats, 3, 3, 512, 1, 1, 'rpn_conv', group_id=1
+            self.conv_feats, 3, 3, 512, 1, 1, 'rpn_conv', init_w="normal", stddev=0.01, group_id=1
         )
         self.rpn_feature            = nonlinear(
             self.rpn_conv_feature, 'relu'
@@ -67,10 +67,10 @@ class RPN:
         # rpn_bbox_pred_original has shape (1, H, W, num_anchors * 4)
         # where H, W are height and width of the feature map.
         self.rpn_cls_score_original  = convolution(
-            self.rpn_feature, 1, 1, 2 * self.anchors_count, 1, 1, 'rpn_cls', group_id=1
+            self.rpn_feature, 1, 1, 2 * self.anchors_count, 1, 1, 'rpn_cls', init_w="normal", stddev=0.01, group_id=1
         )
         self.rpn_bbox_pred_original  = convolution(
-            self.rpn_feature, 1, 1, 4 * self.anchors_count, 1, 1, 'rpn_regs', group_id=1
+            self.rpn_feature, 1, 1, 4 * self.anchors_count, 1, 1, 'rpn_regs', init_w="normal", stddev=0.001, group_id=1
         )
 
         # Convert (flatten) `rpn_cls_score_original` which has two scalars per

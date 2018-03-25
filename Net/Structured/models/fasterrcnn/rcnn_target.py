@@ -107,7 +107,7 @@ class RCNNTarget:
         # background.
         best_fg_labels_for_proposals = tf.add(
             tf.gather(gt_boxes[:, 4], overlaps_best_gt_idxs),
-            1
+            1.
         )
         iou_is_fg = tf.greater_equal(
             max_overlaps, self.foreground_threshold
@@ -138,7 +138,8 @@ class RCNNTarget:
         # because setting the best proposal for each gt_box has priority.
         best_proposals_gt_labels = tf.sparse_to_dense(
             sparse_indices=tf.reshape(best_proposals_idxs, [-1]),
-            sparse_values=gt_boxes[:, 4] + 1,
+            sparse_values=gt_boxes[:, 4],
+            #sparse_values=gt_boxes[:, 4] + 1,
             default_value=0.,
             output_shape=tf.cast(proposals_label_shape, tf.int64),
             validate_indices=False,

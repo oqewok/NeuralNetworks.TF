@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.python.training import moving_averages
 
 
-def weight(name, shape, init='normal', range=0.1, stddev=0.01, scale = 1.0, init_val=None, group_id=0):
+def weight(name, shape, init='normal', reg=0.0005, range=0.1, stddev=0.01, scale=1.0, init_val=None, group_id=0):
     """ Get a weight variable. """
     if init_val != None:
         initializer = tf.constant_initializer(init_val)
@@ -25,15 +25,15 @@ def weight(name, shape, init='normal', range=0.1, stddev=0.01, scale = 1.0, init
     else:
         initializer = tf.truncated_normal_initializer(stddev=stddev)
 
-    var = tf.get_variable(name, shape, initializer = initializer)
-    tf.add_to_collection('l2_'+str(group_id), tf.nn.l2_loss(var))
+    var = tf.get_variable(name, shape, initializer=initializer)
+    tf.add_to_collection('l2_'+str(group_id), reg * tf.nn.l2_loss(var))
     return var
 
 
 def bias(name, dim, init_val=0.0):
     """ Get a bias variable. """
     dims = dim if isinstance(dim, list) else [dim]
-    return tf.get_variable(name, dims, initializer = tf.constant_initializer(init_val))
+    return tf.get_variable(name, dims, initializer=tf.constant_initializer(init_val))
 
 
 def nonlinear(x, nl=None):

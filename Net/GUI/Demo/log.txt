@@ -50,3 +50,62 @@ Loading model.
 
 Loading model.
 
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+'TFSessionHolder' object has no attribute 'y'Traceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 399, in evaluate
+    self.w = self.y.eval(
+AttributeError: 'TFSessionHolder' object has no attribute 'y'
+'NoneType' object is not iterableTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 180, in OnRecognizeClick
+    result, coords = self.TFSession.evaluate(self.imageContainer.image_array)
+TypeError: 'NoneType' object is not iterable
+
+
+
+Loading model.
+
+only size-1 arrays can be converted to Python scalarsTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 197, in OnRecognizeClick
+    coord[:, 0] = int(coord[:, 0] / 1024 * scalingX)
+TypeError: only size-1 arrays can be converted to Python scalars
+
+
+
+Loading model.
+
+only size-1 arrays can be converted to Python scalarsTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 197, in OnRecognizeClick
+    coord[:, 0] = int(coord[:, 0] / 1024 * scalingX)
+TypeError: only size-1 arrays can be converted to Python scalars
+only size-1 arrays can be converted to Python scalarsTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 197, in OnRecognizeClick
+    coord[:, 0] = int(coord[:, 0] / 1024 * scalingX)
+TypeError: only size-1 arrays can be converted to Python scalars
+only size-1 arrays can be converted to Python scalarsTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 197, in OnRecognizeClick
+    coord[:, 0] = int(coord[:, 0] / 1024 * scalingX)
+TypeError: only size-1 arrays can be converted to Python scalars
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+

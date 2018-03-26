@@ -177,39 +177,42 @@ class MainForm(QMainWindow, MainWindow):
         try:
             if (self.imageContainer.dataCopy is not None):
 
-                result, coords = self.TFSession.evaluate(self.imageContainer.image_array)
+                result, coord = self.TFSession.evaluate(self.imageContainer.image_array)
 
                 if (result is True):
-                    for coord in coords:
-                        painter = Painter(self.imageContainer.dataCopy)
+                    painter = Painter(self.imageContainer.dataCopy)
 
-                        scalingX = self.get_label_width()
-                        scalingY = self.get_label_height()
+                    scalingX = self.get_label_width()
+                    scalingY = self.get_label_height()
 
-                        dataCopyX = self.imageContainer.dataCopy.width()
-                        dataCopyY = self.imageContainer.dataCopy.height()
+                    dataCopyX = self.imageContainer.dataCopy.width()
+                    dataCopyY = self.imageContainer.dataCopy.height()
 
-                        if scalingX > dataCopyX:
-                            scalingX = dataCopyX
+                    if scalingX > dataCopyX:
+                        scalingX = dataCopyX
 
-                        if scalingY > dataCopyY:
-                            scalingY = dataCopyY
+                    if scalingY > dataCopyY:
+                        scalingY = dataCopyY
 
-                        tmp_coordX1 = int(coord[0] * scalingX)
-                        tmp_coordY1 = int(coord[1] * scalingY)
-                        tmp_coordX2 = int(coord[2] * scalingX)
-                        tmp_coordY2 = int(coord[3] * scalingY)
+                    coord[:, 0] = coord[:, 0] / 1024 * scalingX
+                    coord[:, 1] = coord[:, 1] / 600 * scalingY
+                    coord[:, 2] = coord[:, 2] / 1024 * scalingX
+                    coord[:, 3] = coord[:, 3] / 600 * scalingY
 
-                        # result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
-                        result = painter.paint_rectangle(tmp_coordX1 - 0.5*tmp_coordX2, tmp_coordY1 - 0.5*tmp_coordY2, tmp_coordX2, tmp_coordY2, None)
-    
-                        if result == False:
-                            self.showWarn("Warning", "Одна из областей не была нарисована")
-                            pass
+                    coord[:, 0] = coord[:, 0] - 0.5*coord[:, 2]
+                    coord[:, 1] = coord[:, 1] - 0.5*coord[:, 3]
 
-                        self.update_label_Image(self.imageContainer.dataCopy)
+                    # result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
+                    coord = coord[0:10]
+                    painter.paint_rectangles(coord)
 
-                        pass
+                    # if result == False:
+                    #     self.showWarn("Warning", "Одна из областей не была нарисована")
+                    #     pass
+
+                    self.update_label_Image(self.imageContainer.dataCopy)
+
+                    pass
 
                 else:
                     self.showWarn("", "Оценка не произведена")
@@ -352,7 +355,8 @@ class Painter():
     def paint_rectangles(self, list: []):
         if (list is not None):
             for rect in list:
-                self.paint_rect(rect)
+                r = QRect(rect[0], rect[1], rect[2], rect[3])
+                self.paint_rect(r)
         pass
 
 

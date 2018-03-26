@@ -1,0 +1,52 @@
+
+
+
+Loading model.
+
+Cannot feed value of shape (1, 96, 128, 1) for Tensor 'inputs:0', which has shape '(?, 600, 1024, 3)'Traceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 397, in evaluate
+    self.is_train: False
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 656, in eval
+    return _eval_using_default_session(self, feed_dict, self.graph, session)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 4901, in _eval_using_default_session
+    return session.run(tensors, feed_dict)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\client\session.py", line 905, in run
+    run_metadata_ptr)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\client\session.py", line 1113, in _run
+    str(subfeed_t.get_shape())))
+ValueError: Cannot feed value of shape (1, 96, 128, 1) for Tensor 'inputs:0', which has shape '(?, 600, 1024, 3)'
+'NoneType' object is not iterableTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 178, in OnRecognizeClick
+    result, coord = self.TFSession.evaluate(self.imageContainer.image_array)
+TypeError: 'NoneType' object is not iterable
+Cannot feed value of shape (1, 96, 128, 1) for Tensor 'inputs:0', which has shape '(?, 600, 1024, 3)'Traceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 397, in evaluate
+    self.is_train: False
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 656, in eval
+    return _eval_using_default_session(self, feed_dict, self.graph, session)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 4901, in _eval_using_default_session
+    return session.run(tensors, feed_dict)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\client\session.py", line 905, in run
+    run_metadata_ptr)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\client\session.py", line 1113, in _run
+    str(subfeed_t.get_shape())))
+ValueError: Cannot feed value of shape (1, 96, 128, 1) for Tensor 'inputs:0', which has shape '(?, 600, 1024, 3)'
+'NoneType' object is not iterableTraceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 178, in OnRecognizeClick
+    result, coord = self.TFSession.evaluate(self.imageContainer.image_array)
+TypeError: 'NoneType' object is not iterable
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+

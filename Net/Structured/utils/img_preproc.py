@@ -6,9 +6,17 @@ from skimage import io
 from skimage import transform
 
 # Default RGB means used commonly.
-_R_MEAN = 98.1689309323291
-_G_MEAN = 99.10622145031063
-_B_MEAN = 97.50672213484069
+_R_MEAN = 109.89532405598959
+_G_MEAN = 114.09551285807291
+_B_MEAN = 113.46317675781248
+
+# _R_MEAN = 80.74853538931072
+# _G_MEAN = 82.40603759001492
+# _B_MEAN = 81.59949978680682
+
+# _R_MEAN = 98.1689309323291
+# _G_MEAN = 99.10622145031063
+# _B_MEAN = 97.50672213484069
 
 # _R_MEAN = 123.68
 # _G_MEAN = 116.78
@@ -72,7 +80,7 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
 
 def preprocess(inputs):
     inputs = subtract_channels(inputs)
-    inputs = normalize(inputs)
+    #inputs = normalize(inputs)
 
     return inputs
 

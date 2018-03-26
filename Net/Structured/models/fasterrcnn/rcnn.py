@@ -31,11 +31,12 @@ class RCNN:
 
     def __init__(self, config, conv_feature_map, proposals, img_shape, gt_boxes=None, is_training=False):
         self.config = config
-        self.num_classes = self.config.num_classes
+        self.num_classes    = self.config.num_classes
 
-        self.l1_sigma = self.config.rcnn_l1_sigma
-        self.use_mean = self.config.use_mean
-        self.dropout_prob = self.config.dropout
+        self.reg            = self.config.regularization
+        self.l1_sigma       = self.config.rcnn_l1_sigma
+        self.use_mean       = self.config.use_mean
+        self.dropout_prob   = self.config.dropout
 
         self.build(conv_feature_map, proposals, img_shape, gt_boxes, is_training)
 
@@ -78,6 +79,9 @@ class RCNN:
             # We avg our height and width dimensions for a more
             # "memory-friendly" Tensor.
             self.roi_pooled_features = tf.reduce_mean(self.roi_pooled_features, axis=(1, 2))
+        # else:
+        #     s = self.roi_pooled_features.shape
+        #     self.roi_pooled_features = tf.reshape(self.roi_pooled_features, [-1, s[1]*s[2]*s[3]])
 
         self.build_fc_layers(self.roi_pooled_features, is_training)
 
@@ -108,25 +112,25 @@ class RCNN:
         # ones and it should be easy to tune it from the network config.
 
         # Compute the RoI classification results
-        fc6_feats = fully_connected(proposals, 4096, 'rcn_fc6', init_w='variance_scaling', group_id=2)
+        fc6_feats = fully_connected(proposals, 4096, 'rcn_fc6', init_w='variance_scaling', reg=self.reg, group_id=2)
         fc6_feats = nonlinear(fc6_feats, 'relu')
         fc6_feats = dropout(fc6_feats, self.dropout_prob, is_training)
 
-        fc7_feats = fully_connected(fc6_feats, 4096, 'rcn_fc7', init_w='variance_scaling', group_id=2)
+        fc7_feats = fully_connected(fc6_feats, 4096, 'rcn_fc7', init_w='variance_scaling', reg=self.reg, group_id=2)
         fc7_feats = nonlinear(fc7_feats, 'relu')
         fc7_feats = dropout(fc7_feats, self.dropout_prob, is_training)
 
         # We define the classifier layer having a num_classes + 1 background
         # since we want to be able to predict if the proposal is background as
         # well.
-        self.cls_scores = fully_connected(fc7_feats, self.num_classes, 'fc_cls', init_w='normal', group_id=2)
+        self.cls_scores = fully_connected(fc7_feats, self.num_classes, 'fc_cls', init_w='normal', reg=self.reg, group_id=2)
         #self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
         self.cls_prob = tf.nn.softmax(self.cls_scores)
 
         # The bounding box adjustment layer has 4 times the number of classes
         # We choose which to use depending on the output of the classifier
         # layer
-        self.bbox_offsets = fully_connected(fc7_feats, self.num_classes * 4, 'fc_bbox', init_w='normal', group_id=2)
+        self.bbox_offsets = fully_connected(fc7_feats, self.num_classes * 4, 'fc_bbox', init_w='normal', reg=self.reg, group_id=2)
 
 
     def loss(self, cls_score, cls_target, bbox_offsets, bbox_offsets_target):
@@ -195,7 +199,8 @@ class RCNN:
             # We get cross entropy loss of each proposal.
             cross_entropy_per_proposal = (
                 tf.nn.softmax_cross_entropy_with_logits(
-                    labels=tf.stop_gradient(cls_target_one_hot),
+                    #labels=tf.stop_gradient(cls_target_one_hot),
+                    labels=cls_target_one_hot,
                     logits=cls_score_labeled
                 )
             )
@@ -219,7 +224,7 @@ class RCNN:
             # for making `one_hot` with depth `num_classes` to work we need
             # to lower them to make them 0-index.
 
-            #cls_target_labeled = cls_target_labeled - 1
+            cls_target_labeled = cls_target_labeled - 1
 
             cls_target_one_hot = tf.one_hot(
                 cls_target_labeled, depth=self.num_classes,

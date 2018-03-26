@@ -5,8 +5,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import random
+from skimage import io
+from Structured.utils.img_preproc import *
 
-from Net import data_reader as reader
+import data_reader as reader
 
 formImgWidth = 800
 formImgHeight = 452
@@ -151,7 +153,7 @@ class MainForm(QMainWindow, MainWindow):
 
             if file_info.exists():
                 fullName = file_info.absoluteFilePath()
-                folderName = file_info.path();
+                folderName = file_info.path()
 
             else:
                 self.showWarn("Ошибка", "Модель не была загружена, т.к. отсутствует файл")
@@ -175,37 +177,39 @@ class MainForm(QMainWindow, MainWindow):
         try:
             if (self.imageContainer.dataCopy is not None):
 
-                result, coord = self.TFSession.evaluate(self.imageContainer.image_array)
+                result, coords = self.TFSession.evaluate(self.imageContainer.image_array)
 
                 if (result is True):
-                    painter = Painter(self.imageContainer.dataCopy)
+                    for coord in coords:
+                        painter = Painter(self.imageContainer.dataCopy)
 
-                    scalingX = self.get_label_width()
-                    scalingY = self.get_label_height()
+                        scalingX = self.get_label_width()
+                        scalingY = self.get_label_height()
 
-                    dataCopyX = self.imageContainer.dataCopy.width()
-                    dataCopyY = self.imageContainer.dataCopy.height()
+                        dataCopyX = self.imageContainer.dataCopy.width()
+                        dataCopyY = self.imageContainer.dataCopy.height()
 
-                    if scalingX > dataCopyX:
-                        scalingX = dataCopyX
+                        if scalingX > dataCopyX:
+                            scalingX = dataCopyX
 
-                    if scalingY > dataCopyY:
-                        scalingY = dataCopyY
+                        if scalingY > dataCopyY:
+                            scalingY = dataCopyY
 
-                    tmp_coordX1 = int(coord[0] * scalingX)
-                    tmp_coordY1 = int(coord[1] * scalingY)
-                    tmp_coordX2 = int(coord[2] * scalingX)
-                    tmp_coordY2 = int(coord[3] * scalingY)
+                        tmp_coordX1 = int(coord[0] * scalingX)
+                        tmp_coordY1 = int(coord[1] * scalingY)
+                        tmp_coordX2 = int(coord[2] * scalingX)
+                        tmp_coordY2 = int(coord[3] * scalingY)
 
-                    result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
+                        # result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
+                        result = painter.paint_rectangle(tmp_coordX1 - 0.5*tmp_coordX2, tmp_coordY1 - 0.5*tmp_coordY2, tmp_coordX2, tmp_coordY2, None)
+    
+                        if result == False:
+                            self.showWarn("Warning", "Одна из областей не была нарисована")
+                            pass
 
-                    if result == False:
-                        self.showWarn("Warning", "Одна из областей не была нарисована")
+                        self.update_label_Image(self.imageContainer.dataCopy)
+
                         pass
-
-                    self.update_label_Image(self.imageContainer.dataCopy)
-
-                    pass
 
                 else:
                     self.showWarn("", "Оценка не произведена")
@@ -259,7 +263,9 @@ class Frame():
         self.dataCopy = self.data.copy()
         self.setInternalOriginalSizes()
 
-        img = reader.read_image(FullPathToImg)  # type of string
+        # img = reader.read_image(FullPathToImg)  # type of string
+        img = io.imread(FullPathToImg)
+        img = resize_img(img, [600, 1024, 3], as_int=True)
         self.image_array = [img]
 
     def setInternalOriginalSizes(self):
@@ -365,9 +371,12 @@ class TFSessionHolder():
 
             self.graph = tf.get_default_graph()
             self.x = self.graph.get_tensor_by_name('inputs:0')
-            self.y = self.graph.get_tensor_by_name('outputs:0')
+            # self.y = self.graph.get_tensor_by_name('outputs:0')
+            self.y = self.graph.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
+            #self.probs = self.graph.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
 
-            self.dropout = self.graph.get_tensor_by_name('fc2_c_dropout:0')
+            #self.dropout = self.graph.get_tensor_by_name('fc2_c_dropout:0')
+            self.is_train = self.graph.get_tensor_by_name('is_train:0')
 
             self.sess.run(tf.global_variables_initializer())
 
@@ -387,7 +396,13 @@ class TFSessionHolder():
         try:
             with self.sess.as_default():
                 print('Evaluating started...')
-                self.w = self.y.eval(feed_dict={self.x: imgage_array, self.dropout: 1.0})[0]
+                self.w = self.y.eval(
+                    feed_dict={
+                        self.x: imgage_array,
+                        self.is_train: False
+                    }
+                )
+
                 print(self.w)
                 print('Evaluating ended!')
 

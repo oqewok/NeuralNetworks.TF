@@ -4,7 +4,7 @@ import skimage
 import numpy as np
 from skimage import io
 from skimage import transform
-from Net import conv_nn_plates_light
+import conv_nn_plates_light
 from PIL import Image
 
 IMG_WIDTH = conv_nn_plates_light.IMG_WIDTH

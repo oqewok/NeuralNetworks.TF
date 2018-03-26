@@ -50,6 +50,7 @@ class FasterRCNNModel(BaseModel):
         # convolution features shape (ndarray).
         self.conv_feats_shape   = None
 
+        self.with_rcnn = self.config.with_rcnn
         # Build basic CNN for feature extraction. Default is VGG16.
         ''' For example:
         elif self.config.basic_cnn == "resnet50":
@@ -75,32 +76,37 @@ class FasterRCNNModel(BaseModel):
 
         # RCNN
         #proposals = tf.stop_gradient(self.rpn_roi_proposals)
+        if self.with_rcnn:
+            self.rcnn = RCNN(
+                self.config, self.conv_feats_tensor, self.rpn_roi_proposals,
+                self.config.input_shape, gt_boxes=self.gt_boxes, is_training=self.is_training_tensor
+            )
 
-        self.rcnn = RCNN(
-            self.config, self.conv_feats_tensor, self.rpn_roi_proposals,
-            self.config.input_shape, gt_boxes=self.gt_boxes, is_training=self.is_training_tensor
-        )
-
-        # Predicted RCNN
-        self.objects                = self.rcnn.objects
-        self.proposal_label         = self.rcnn.proposal_label
-        self.proposal_label_prob    = self.rcnn.proposal_label_prob
+            # Predicted RCNN
+            self.objects                = self.rcnn.objects
+            self.proposal_label         = self.rcnn.proposal_label
+            self.proposal_label_prob    = self.rcnn.proposal_label_prob
 
 
         with tf.name_scope('losses'):
             # RPN losses
             self.rpn_cls_loss, self.rpn_reg_loss = self.rpn.rpn_cls_loss, self.rpn.rpn_reg_loss
+            if self.with_rcnn:
+                #RCNN losses
+                self.rcnn_cls_loss, self.rcnn_reg_loss = self.rcnn.rcnn_cls_loss, self.rcnn.rcnn_reg_loss
+                #self.loss = self.rcnn_reg_loss
 
-            #RCNN losses
-            self.rcnn_cls_loss, self.rcnn_reg_loss = self.rcnn.rcnn_cls_loss, self.rcnn.rcnn_reg_loss
-            #self.loss = self.rcnn_reg_loss
-
-            all_losses_dict = {
-                    "rpn_cls_loss"  : self.rpn_cls_loss,
-                    "rpn_reg_loss"  : self.rpn_reg_loss,
-                    "rcnn_cls_loss" : self.rcnn_cls_loss,
-                    "rcnn_reg_loss" : self.rcnn_reg_loss
-            }
+                all_losses_dict = {
+                        "rpn_cls_loss"  : self.rpn_cls_loss,
+                        "rpn_reg_loss"  : self.rpn_reg_loss,
+                        "rcnn_cls_loss" : self.rcnn_cls_loss,
+                        "rcnn_reg_loss" : self.rcnn_reg_loss,
+                }
+            else:
+                all_losses_dict = {
+                    "rpn_cls_loss": self.rpn_cls_loss,
+                    "rpn_reg_loss": self.rpn_reg_loss,
+                }
 
             for loss_name, loss_tensor in all_losses_dict.items():
                 tf.summary.scalar(
@@ -129,7 +135,7 @@ class FasterRCNNModel(BaseModel):
             )
 
         self.optimizer = optimizer.minimize(
-            loss=self.rcnn_cls_loss, global_step=self.global_step_tensor
+            loss=self.loss, global_step=self.global_step_tensor
         )
 
 

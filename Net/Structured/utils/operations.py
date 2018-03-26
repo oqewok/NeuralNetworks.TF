@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.python.training import moving_averages
 
 
-def weight(name, shape, init='normal', reg=0.0005, range=0.1, stddev=0.01, scale=1.0, init_val=None, group_id=0):
+def weight(name, shape, init='normal', reg=0.0, range=0.1, stddev=0.01, scale=1.0, init_val=None, group_id=0):
     """ Get a weight variable. """
     if init_val != None:
         initializer = tf.constant_initializer(init_val)
@@ -26,7 +26,7 @@ def weight(name, shape, init='normal', reg=0.0005, range=0.1, stddev=0.01, scale
         initializer = tf.truncated_normal_initializer(stddev=stddev)
 
     var = tf.get_variable(name, shape, initializer=initializer)
-    tf.add_to_collection('l2_'+str(group_id), reg * tf.nn.l2_loss(var))
+    tf.add_to_collection('l2_'+str(group_id), tf.multiply(reg, tf.nn.l2_loss(var)))
     return var
 
 
@@ -48,12 +48,12 @@ def nonlinear(x, nl=None):
         return x
 
 
-def convolution(x, k_h, k_w, c_o, s_h, s_w, name, init_w='normal', init_b=0, stddev=0.001, padding='SAME', group_id=0):
+def convolution(x, k_h, k_w, c_o, s_h, s_w, name, init_w='normal', init_b=0, stddev=0.001, reg=0.0, padding='SAME', group_id=0):
     """ Apply a convolutional layer (with bias). """
     c_i = _get_shape(x)[-1]
     convolve = lambda i, k: tf.nn.conv2d(i, k, [1, s_h, s_w, 1], padding=padding)
     with tf.variable_scope(name) as scope:
-        w = weight('weights', [k_h, k_w, c_i, c_o], init=init_w, stddev=stddev, group_id=group_id)
+        w = weight('weights', [k_h, k_w, c_i, c_o], init=init_w, stddev=stddev, reg=reg, group_id=group_id)
         z = convolve(x, w)
         b = bias('biases', c_o, init_b)
         z = tf.nn.bias_add(z, b)
@@ -70,13 +70,13 @@ def convolution_no_bias(x, k_h, k_w, c_o, s_h, s_w, name, init_w='normal', stdde
     return z
 
 
-def fully_connected(x, output_size, name, init_w='normal', init_b=0, stddev=0.001, group_id=0):
+def fully_connected(x, output_size, name, init_w='normal', init_b=0, reg=0.0, stddev=0.001, group_id=0):
     """ Apply a fully-connected layer (with bias). """
     x_shape = _get_shape(x)
     input_dim = x_shape[-1]
 
     with tf.variable_scope(name) as scope:
-        w = weight('weights', [input_dim, output_size], init=init_w, stddev=stddev, group_id=group_id)
+        w = weight('weights', [input_dim, output_size], init=init_w, stddev=stddev, reg=reg, group_id=group_id)
         b = bias('biases', [output_size], init_b)
         z = tf.nn.xw_plus_b(x, w, b)
     return z

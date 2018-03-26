@@ -1,6 +1,6 @@
-from Net import conv_nn_plates
+import conv_nn_plates
 import numpy as np
-from Net import image_proc
+import image_proc
 
 #IMG_WIDTH = conv_nn_plates.IMG_WIDTH
 #IMG_HEIGHT = conv_nn_plates.IMG_HEIGHT

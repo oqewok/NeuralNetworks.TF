@@ -31,9 +31,6 @@ def resize_img(image, new_shape, bboxes=None, as_int=True):
         image = transform.resize(
             image, new_shape, mode='reflect', preserve_range=as_int)
 
-        if as_int:
-            image = np.array(image, int)
-
         if bboxes is not None:
             bboxes = adjust_bboxes(bboxes, old_shape, new_shape)
             return image, bboxes

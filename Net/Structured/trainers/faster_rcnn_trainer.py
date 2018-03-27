@@ -1,8 +1,6 @@
 from Structured.base.base_train import BaseTrain
 from tqdm import tqdm
 
-from tensorflow.python import debug as tf_debug
-
 import numpy as np
 import os
 
@@ -12,6 +10,7 @@ class FasterRCNNTrainer(BaseTrain):
         super(FasterRCNNTrainer, self).__init__(sess, model, data, config, logger)
 
         self.num_iter_per_epoch = self.data.num_train
+
 
     def train_epoch(self):
         """

@@ -30,3 +30,8 @@ def process_config(jsonfile):
     config.summary_dir      = os.path.join("..\\experiments", config.exp_name, "summary")
     config.checkpoint_dir   = os.path.join("..\\experiments", config.exp_name, "checkpoint")
     return config
+
+
+if __name__ == '__main__':
+    config, config_dict = get_config_from_json("C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Licence plates__artificial\\ann\\00000000_E112YB13.json")
+    pass

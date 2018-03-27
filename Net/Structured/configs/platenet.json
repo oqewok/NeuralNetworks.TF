@@ -1,0 +1,23 @@
+{
+  "exp_name"                  : "platenet_1",
+  "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Licence_plates_artificial\\",
+  "valid_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Licence_plates_artificial\\",
+  "test_root_directory"       : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Licence_plates_artificial\\",
+  "train_files_directory"     : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Train\\",
+  "basic_cnn"                 : "vgg16",
+  "input_shape"               : [64, 128, 3],
+  "is_training"               : 1,
+  "num_epochs"                : 20,
+  "learning_rate"             : 0.0001,
+  "regularization"            : 0.0005,
+  "lr_decay_steps"            : 25000,
+  "lr_decay_rate"             : 0.95,
+  "momentum"                  : 0.9,
+  "decay"                     : 0.95,
+  "batch_size"                : 32,
+  "optimizer"                 : "adam",
+  "dropout"                   : 0.5,
+  "use_batch_norm"            : 1,
+  "num_classes"               : 2,
+  "max_to_keep"               : 5
+}

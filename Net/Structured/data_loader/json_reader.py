@@ -6,7 +6,7 @@ from Structured.utils.img_preproc import *
 from Structured.data_loader.parser import MarkupParser
 from Structured.data_loader.artifical_plates_json_parser import JSONParser
 
-class Reader():
+class JsonReader():
     def __init__(self, directory):
         self.directory = directory
 
@@ -80,15 +80,15 @@ class Reader():
 
         for i in range(len(img_files)):
             image = io.imread(img_files[i])
-            bboxes = Reader.parse_bbox_file(bboxes_files[i])
+            #bboxes = JsonReader.parse_bbox_file(bboxes_files[i])
 
             if new_shape != None:
-                image, bboxes = resize_img(image, new_shape, bboxes, as_int=True)
+                image = resize_img(image, new_shape, None, as_int=True)
 
             images.append(image)
-            bboxes_all.append(bboxes)
+            #bboxes_all.append(bboxes)
 
-        return np.array(images), np.array(bboxes_all)
+        return np.array(images)#, np.array(bboxes_all)
 
 
     @staticmethod
@@ -109,7 +109,8 @@ class Reader():
                         :return: ndarray of [[xmin1 ymin1 xmax1 ymax1], ...,[xminN yminN xmaxN ymaxN]]
         '''
         # Get xml-parser
-        parser = MarkupParser()
+        # Replace this to JSONParser if need
+        parser = JSONParser()
         bboxes = parser.getBoundBoxes(path)
 
         return bboxes

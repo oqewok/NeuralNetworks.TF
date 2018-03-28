@@ -80,15 +80,15 @@ class JsonReader():
 
         for i in range(len(img_files)):
             image = io.imread(img_files[i])
-            #bboxes = JsonReader.parse_bbox_file(bboxes_files[i])
+            bboxes = JsonReader.parse_bbox_file(bboxes_files[i])
 
             if new_shape != None:
-                image = resize_img(image, new_shape, None, as_int=True)
+                image, bboxes = resize_img(image, new_shape, bboxes, as_int=True)
 
             images.append(image)
-            #bboxes_all.append(bboxes)
+            bboxes_all.append(bboxes[0])
 
-        return np.array(images)#, np.array(bboxes_all)
+        return np.array(images), np.array(bboxes_all)
 
 
     @staticmethod

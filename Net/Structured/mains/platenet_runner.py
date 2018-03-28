@@ -24,7 +24,7 @@ def main():
     # create the experiments dirs
     create_dirs([config.summary_dir, config.checkpoint_dir])
     # create tensorflow session
-    sess = tf.Session()
+    sess = tf.InteractiveSession()
 
     sess.run(tf.global_variables_initializer())
 

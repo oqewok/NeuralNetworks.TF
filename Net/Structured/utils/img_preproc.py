@@ -55,9 +55,13 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
     old_height, old_width = old_shape[0], old_shape[1]
     new_height, new_width = new_shape[0], new_shape[1]
 
+    label = None
     # We normalize bounding boxes points.
     bboxes_float = np.array(bboxes, dtype=np.float32)
-    x_min, y_min, x_max, y_max, label = np.split(bboxes_float, 5, axis=1)
+    if len(bboxes) == 5:
+        x_min, y_min, x_max, y_max, label = np.split(bboxes_float, 5, axis=1)
+    else:
+        x_min, y_min, x_max, y_max = np.split(bboxes_float, 4, axis=1)
 
     x_min = x_min / old_width
     y_min = y_min / old_height
@@ -69,10 +73,15 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
     y_min = np.int32(y_min * new_height)
     x_max = np.int32(x_max * new_width)
     y_max = np.int32(y_max * new_height)
-    label = np.int32(label)  # Cast back to int.
 
-    # Concat points and label to return a [num_bboxes, 5] tensor.
-    return np.concatenate((x_min, y_min, x_max, y_max, label), axis=1)
+    if len(bboxes) == 5:
+        label = np.int32(label)  # Cast back to int.
+        # Concat points and label to return a [num_bboxes, 5] tensor.
+        return np.concatenate((x_min, y_min, x_max, y_max, label), axis=1)
+    else:
+        # Concat points and label to return a [num_bboxes, 5] tensor.
+        return np.concatenate((x_min, y_min, x_max, y_max), axis=1)
+
 
 
 def preprocess(inputs):

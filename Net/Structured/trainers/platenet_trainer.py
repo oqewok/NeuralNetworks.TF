@@ -22,23 +22,24 @@ class PlateNetTrainer(BaseTrain):
         """
 
         losses = []
-        accs = []
+        # accs = []
 
         loop = tqdm(range(self.num_iter_per_epoch))
 
         for _ in loop:
-            loss, acc = self.train_step()
+            # loss, acc = self.train_step()
+            loss = self.train_step()
 
             losses.append(loss)
-            accs.append(acc)
+            # accs.append(acc)
 
         loop.close()
 
-        mean_loss = np.mean(losses)
-        mean_acc = np.mean(accs)
+        mean_loss = np.min(losses)
+        # mean_acc = np.mean(accs)
 
         print("\nloss:", mean_loss)
-        print("\naccuracy:", mean_acc)
+        # print("\naccuracy:", mean_acc)
 
         cur_it = self.model.global_step_tensor.eval(self.sess)
 
@@ -60,44 +61,40 @@ class PlateNetTrainer(BaseTrain):
        - run the tensorflow session
        - return any metrics you need to summarize
        """
-        img = next(self.data.next_batch())
+        H, W, C = self.config.input_shape
 
-        # generate random image for negative samples
-        neg_imgs = []
-        for i in range(len(img)):
-            neg_img = generate_random_image(self.config.input_shape)
-            neg_imgs.append(neg_img)
+        b_imgs, b_boxes = next(self.data.next_batch())
 
-        neg_imgs = np.array(neg_imgs)
-        imgs = np.concatenate((img, neg_imgs), axis=0)
-
-        ones = np.ones(shape=[len(img)], dtype=np.int32)
-        zeros = np.zeros(shape=[len(img)], dtype=np.int32)
-        labels = np.concatenate((ones, zeros))
-
-        indices = np.random.permutation(len(ones) + len(zeros))
-
-        b_img       = imgs[indices]
-        b_labels    = labels[indices]
+        b_imgs = b_imgs / 255.
+        b_boxes = b_boxes / (0.5 * W, 0.5 * H, 0.5 * W, 0.5 * H) - 1.
+        # # generate random image for negative samples
+        # neg_imgs = []
+        # for i in range(len(img)):
+        #     neg_img = generate_random_image(self.config.input_shape)
+        #     neg_imgs.append(neg_img)
+        #
+        # neg_imgs = np.array(neg_imgs)
+        # imgs = np.concatenate((img, neg_imgs), axis=0)
+        #
+        # ones = np.ones(shape=[len(img)], dtype=np.int32)
+        # zeros = np.zeros(shape=[len(img)], dtype=np.int32)
+        # labels = np.concatenate((ones, zeros))
+        #
+        # indices = np.random.permutation(len(ones) + len(zeros))
+        #
+        # b_img       = imgs[indices]
+        # b_boxes    = labels[indices]
 
         # graph = tf.get_default_graph()
         # inputs = graph.get_tensor_by_name('truediv:0')
 
         feed_dict = {
-            self.model.inputs_tensor: b_img,
-            self.model.labels: b_labels,
-            self.model.is_training_tensor: self.model.is_training,
+            self.model.inputs_tensor: b_imgs,
+            self.model.gt_boxes: b_boxes,
         }
 
-        _, loss, acc, pred, out = self.sess.run(
-                [
-                    self.model.optimizer,
-                    self.model.loss,
-                    self.model.accuracy,
-                    self.model.correct_prediction,
-                    self.model.outputs,
-                ],
-                feed_dict=feed_dict
-            )
+        self.model.optimizer.run(feed_dict=feed_dict)
 
-        return loss, acc
+        loss = self.model.loss.eval(feed_dict=feed_dict)
+
+        return loss

@@ -74,12 +74,12 @@ class ArtificalCarPlatesDataProvider():
             self.batch_idx = 0
 
         img_files = img_files[indices]
-        #bboxes_files = bboxes_files[indices]
+        # bboxes_files = bboxes_files[indices]
 
-        self.images = JsonReader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
-        #self.images, self.bboxes = JsonReader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
+        # self.images = JsonReader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
+        self.images, self.bboxes = JsonReader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
 
-        yield self.images#, self.bboxes
+        yield self.images, self.bboxes
 
 
     def next_img(self):

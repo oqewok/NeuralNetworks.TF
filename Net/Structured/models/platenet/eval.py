@@ -19,7 +19,7 @@ path = os.path.join(
 
 image = io.imread("C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Licence_plates_artificial\\00000002_C725PE08.png")
 img = resize_img(image, config.input_shape, as_int=True)
-img /= 255.0
+img /= 255
 
 with tf.Session() as sess:
     saver = tf.train.import_meta_graph(path)
@@ -34,21 +34,24 @@ with tf.Session() as sess:
 
     graph = tf.get_default_graph()
     inputs = graph.get_tensor_by_name('inputs:0')
-    probs = graph.get_tensor_by_name('Softmax:0')
-
-    is_train = graph.get_tensor_by_name('is_train:0')
+    boxes = graph.get_tensor_by_name('add_5:0')
 
     sess.run(tf.global_variables_initializer())
 
-    prob = sess.run(
-        [probs], feed_dict={inputs: [img], is_train: False}
-    )
+    b = boxes.eval(session=sess, feed_dict={inputs: [img]})[0]
 
-    print(prob)
+    H, W, C = config.input_shape
 
+    b = (b + 1.0) * (0.5 * W, 0.5 * H, 0.5 * W, 0.5 * H)
     "show img"
     fig, ax = plt.subplots(1)
 
-    ax.imshow(img)
+    rect = patches.Rectangle(
+        (b[0], b[1]), b[2] - b[0], b[3] - b[1], linewidth=1,
+        edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+
+    img = np.reshape(img, [img.shape[0], img.shape[1]])
+    ax.imshow(image)
     plt.show()
 pass

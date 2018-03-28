@@ -26,6 +26,10 @@ def smooth_l1_loss(bbox_prediction, bbox_target, sigma=3.0):
     return bbox_loss
 
 
+def mse(expected, predicted):
+    se = tf.square(expected - predicted)
+    return tf.reduce_mean(se)
+
 if __name__ == '__main__':
     bbox_prediction_tf = tf.placeholder(tf.float32)
     bbox_target_tf = tf.placeholder(tf.float32)

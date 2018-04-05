@@ -13,6 +13,9 @@ import data_reader as reader
 formImgWidth = 800
 formImgHeight = 452
 
+INPUT_SHAPE = [224, 224, 3]
+H, W, C = INPUT_SHAPE
+
 import tensorflow as tf
 
 from mainwindow import Ui_MainWindow as MainWindow
@@ -177,7 +180,7 @@ class MainForm(QMainWindow, MainWindow):
         try:
             if (self.imageContainer.dataCopy is not None):
 
-                result, coord = self.TFSession.evaluate(self.imageContainer.image_array)
+                result, coord, scores = self.TFSession.evaluate(self.imageContainer.image_array)
 
                 if (result is True):
                     painter = Painter(self.imageContainer.dataCopy)
@@ -194,18 +197,14 @@ class MainForm(QMainWindow, MainWindow):
                     if scalingY > dataCopyY:
                         scalingY = dataCopyY
 
-                    coord[:, 0] = coord[:, 0] / 1024 * scalingX
-                    coord[:, 1] = coord[:, 1] / 600 * scalingY
-                    coord[:, 2] = coord[:, 2] / 1024 * scalingX
-                    coord[:, 3] = coord[:, 3] / 600 * scalingY
-
-                    coord[:, 0] = coord[:, 0] - 0.5*coord[:, 2]
-                    coord[:, 1] = coord[:, 1] - 0.5*coord[:, 3]
+                    coord[:, 0] = coord[:, 0] / W * scalingX
+                    coord[:, 1] = coord[:, 1] / H * scalingY
+                    coord[:, 2] = coord[:, 2] / W * scalingX
+                    coord[:, 3] = coord[:, 3] / H * scalingY
 
                     # result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
-                    coord = coord[0:10]
-                    painter.paint_rectangles(coord)
-
+                    painter.paint_rectangles(coord[0:50])
+                    print(scores[0:50])
                     # if result == False:
                     #     self.showWarn("Warning", "Одна из областей не была нарисована")
                     #     pass
@@ -268,7 +267,7 @@ class Frame():
 
         # img = reader.read_image(FullPathToImg)  # type of string
         img = io.imread(FullPathToImg)
-        img = resize_img(img, [600, 1024, 3], as_int=True)
+        img = resize_img(img, INPUT_SHAPE, as_int=False)
         self.image_array = [img]
 
     def setInternalOriginalSizes(self):
@@ -355,7 +354,7 @@ class Painter():
     def paint_rectangles(self, list: []):
         if (list is not None):
             for rect in list:
-                r = QRect(rect[0], rect[1], rect[2], rect[3])
+                r = QRect(rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1])
                 self.paint_rect(r)
         pass
 
@@ -363,26 +362,27 @@ class Painter():
 class TFSessionHolder():
 
     def __init__(self):
-        self.sess = tf.Session()
+        self.sess = tf.InteractiveSession()
+        self.sess.run(tf.global_variables_initializer())
         pass
 
     def load_model(self, FullFolderNameToModel, FullMetaFileName) -> bool:
         try:
             self.saver = tf.train.import_meta_graph(FullMetaFileName)
-            self.saver.restore(self.sess, tf.train.latest_checkpoint(FullFolderNameToModel))
-            self.ops = tf.get_collection(
-                'ops_to_restore')  # here are your operators in the same order in which you saved them to the collection
-
             self.graph = tf.get_default_graph()
-            self.x = self.graph.get_tensor_by_name('inputs:0')
+
+            path = FullMetaFileName[:-5]
+            self.saver.restore(self.sess, path)
+
+            # self.x = self.graph.get_tensor_by_name('inputs:0')
+            self.x = self.graph.get_tensor_by_name('Placeholder:0')
             # self.y = self.graph.get_tensor_by_name('outputs:0')
+            # self.y = self.graph.get_tensor_by_name('outputs/xw_plus_b:0')
             self.y = self.graph.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
-            #self.probs = self.graph.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
+            self.probs = self.graph.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
 
-            #self.dropout = self.graph.get_tensor_by_name('fc2_c_dropout:0')
+            #self.dropout = self.graph.get_tensor_by_name('Placeholder_2:0')
             self.is_train = self.graph.get_tensor_by_name('is_train:0')
-
-            self.sess.run(tf.global_variables_initializer())
 
             return True
             pass
@@ -400,18 +400,28 @@ class TFSessionHolder():
         try:
             with self.sess.as_default():
                 print('Evaluating started...')
-                self.w = self.y.eval(
+                self.prediction = self.y.eval(
                     feed_dict={
                         self.x: imgage_array,
                         self.is_train: False
+                        #self.dropout: 1.0
+                    }
+                )
+                self.scores = self.probs.eval(
+                    feed_dict={
+                        self.x: imgage_array,
+                        self.is_train: False
+                        # self.dropout: 1.0
                     }
                 )
 
-                print(self.w)
+                #self.prediction = (self.prediction + 1) * (0.5*W, 0.5*H, 0.5*W, 0.5*H)
+
+                print(self.prediction)
                 print('Evaluating ended!')
 
                 result = True
-                return result, self.w
+                return result, self.prediction, self.scores
             pass
 
         except Exception as e:

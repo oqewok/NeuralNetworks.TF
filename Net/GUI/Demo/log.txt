@@ -109,3 +109,123 @@ Loading model.
 
 Loading model.
 
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+"The name 'Placeholder:0' refers to a Tensor which does not exist. The operation, 'Placeholder', does not exist in the graph."Traceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 377, in load_model
+    self.x = self.graph.get_tensor_by_name('Placeholder:0')
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 3635, in get_tensor_by_name
+    return self.as_graph_element(name, allow_tensor=True, allow_operation=False)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 3459, in as_graph_element
+    return self._as_graph_element_locked(obj, allow_tensor, allow_operation)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 3501, in _as_graph_element_locked
+    "graph." % (repr(name), repr(op_name)))
+KeyError: "The name 'Placeholder:0' refers to a Tensor which does not exist. The operation, 'Placeholder', does not exist in the graph."
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+"The name 'inputs:0' refers to a Tensor which does not exist. The operation, 'inputs', does not exist in the graph."Traceback (most recent call last):
+  File "C:/Users/admin/Documents/GeneralProjectData/Projects/NeuralNetworks.TF/Net/GUI/Demo/Demo.py", line 377, in load_model
+    self.x = self.graph.get_tensor_by_name('inputs:0')
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 3635, in get_tensor_by_name
+    return self.as_graph_element(name, allow_tensor=True, allow_operation=False)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 3459, in as_graph_element
+    return self._as_graph_element_locked(obj, allow_tensor, allow_operation)
+  File "C:\Users\admin\Anaconda3\envs\tensorflow\lib\site-packages\tensorflow\python\framework\ops.py", line 3501, in _as_graph_element_locked
+    "graph." % (repr(name), repr(op_name)))
+KeyError: "The name 'inputs:0' refers to a Tensor which does not exist. The operation, 'inputs', does not exist in the graph."
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+
+
+
+
+Loading model.
+

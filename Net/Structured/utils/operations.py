@@ -26,7 +26,7 @@ def weight(name, shape, init='normal', reg=0.0, range=0.1, stddev=0.01, scale=1.
         initializer = tf.truncated_normal_initializer(stddev=stddev)
 
     var = tf.get_variable(name, shape, initializer=initializer)
-    tf.add_to_collection('l2_'+str(group_id), tf.multiply(reg, tf.nn.l2_loss(var)))
+    #tf.add_to_collection('l2_'+str(group_id), tf.multiply(reg, tf.nn.l2_loss(var)))
     return var
 
 

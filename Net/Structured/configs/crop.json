@@ -1,0 +1,23 @@
+{
+  "exp_name"                  : "platenet_vgg16_1",
+  "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\cascade\\Good\\",
+  "valid_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\cascade\\Bad\\",
+  "test_root_directory"       : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\cascade\\",
+  "train_files_directory"     : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Train\\cascade",
+  "basic_cnn"                 : "vgg16",
+  "input_shape"               : [224, 224, 3],
+  "is_training"               : 1,
+  "num_epochs"                : 200,
+  "learning_rate"             : 0.001,
+  "regularization"            : 1.0,
+  "lr_decay_steps"            : 32000,
+  "lr_decay_rate"             : 0.95,
+  "momentum"                  : 0.9,
+  "decay"                     : 0.95,
+  "batch_size"                : 16,
+  "optimizer"                 : "adam",
+  "dropout"                   : 0.5,
+  "use_batch_norm"            : 0,
+  "num_classes"               : 8,
+  "max_to_keep"               : 5
+}

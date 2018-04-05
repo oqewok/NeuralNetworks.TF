@@ -159,7 +159,7 @@ class RPN:
             cls_target = tf.one_hot(labels, depth=2)
 
             # Equivalent to log loss
-            cross_entropy_per_anchor = tf.nn.softmax_cross_entropy_with_logits(
+            cross_entropy_per_anchor = tf.nn.softmax_cross_entropy_with_logits_v2(
                 labels=cls_target, logits=cls_score
             )
 

@@ -1,5 +1,6 @@
 from Structured.base.base_model import BaseModel
 from Structured.nets.vgg16 import build_basic_vgg16
+from Structured.models.vgg_pretrained import get_vgg16_pretrained
 from Structured.models.fasterrcnn.rpn import RPN
 from Structured.models.fasterrcnn.rcnn import RCNN
 
@@ -42,7 +43,7 @@ class FasterRCNNModel(BaseModel):
         self.gt_boxes = tf.placeholder(shape=[None, 5], dtype=tf.float32, name="gt_boxes")
 
         # Tensor for training mode description. If true => training mode, else => evaluation mode.
-        self.is_training_tensor = None
+        self.is_training_tensor = tf.placeholder(tf.bool, name="is_train")
 
         # convolution features after basic CNN feature extraction
         self.conv_feats_tensor  = None
@@ -57,11 +58,9 @@ class FasterRCNNModel(BaseModel):
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_resnet50(
             self.config)'''
         if self.config.basic_cnn == "vgg16":
-            self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
-                self.config)
-        else:
-            self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
-                self.config)
+            #self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
+            #    self.config)
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_vgg16_pretrained()
 
         # Build RPN
         self.rpn = RPN(

@@ -6,13 +6,15 @@ from skimage import io
 from skimage import transform
 
 # Default RGB means used commonly.
-_R_MEAN = 109.89532405598959
-_G_MEAN = 114.09551285807291
-_B_MEAN = 113.46317675781248
+# _R_MEAN = 109.89532405598959
+# _G_MEAN = 114.09551285807291
+# _B_MEAN = 113.46317675781248
 
-# _R_MEAN = 80.74853538931072
-# _G_MEAN = 82.40603759001492
-# _B_MEAN = 81.59949978680682
+VGG_MEAN = [103.939, 116.779, 123.68]
+
+_R_MEAN = 80.74853538931072
+_G_MEAN = 82.40603759001492
+_B_MEAN = 81.59949978680682
 
 # _R_MEAN = 98.1689309323291
 # _G_MEAN = 99.10622145031063
@@ -58,10 +60,10 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
     label = None
     # We normalize bounding boxes points.
     bboxes_float = np.array(bboxes, dtype=np.float32)
-    if len(bboxes) == 5:
-        x_min, y_min, x_max, y_max, label = np.split(bboxes_float, 5, axis=1)
-    else:
-        x_min, y_min, x_max, y_max = np.split(bboxes_float, 4, axis=1)
+    # if len(bboxes) == 5:
+    x_min, y_min, x_max, y_max, label = np.split(bboxes_float, 5, axis=1)
+    # else:
+    #x_min, y_min, x_max, y_max, _ = np.split(bboxes_float, 5, axis=1)
 
     x_min = x_min / old_width
     y_min = y_min / old_height
@@ -74,24 +76,24 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
     x_max = np.int32(x_max * new_width)
     y_max = np.int32(y_max * new_height)
 
-    if len(bboxes) == 5:
-        label = np.int32(label)  # Cast back to int.
-        # Concat points and label to return a [num_bboxes, 5] tensor.
-        return np.concatenate((x_min, y_min, x_max, y_max, label), axis=1)
-    else:
-        # Concat points and label to return a [num_bboxes, 5] tensor.
-        return np.concatenate((x_min, y_min, x_max, y_max), axis=1)
+    # if len(bboxes) == 5:
+    label = np.int32(label)  # Cast back to int.
+    # Concat points and label to return a [num_bboxes, 5] tensor.
+    return np.concatenate((x_min, y_min, x_max, y_max, label), axis=1)
+    # else:
+    #     # Concat points and label to return a [num_bboxes, 5] tensor.
+    # return np.concatenate((x_min, y_min, x_max, y_max), axis=1)
 
 
 
 def preprocess(inputs):
     inputs = subtract_channels(inputs)
-    #inputs = normalize(inputs)
+    inputs = normalize(inputs)
 
     return inputs
 
 
-def subtract_channels(inputs, means=[_R_MEAN, _G_MEAN, _B_MEAN]):
+def subtract_channels(inputs, means=VGG_MEAN):
     """Subtract channels from images.
     It is common for CNNs to subtract the mean of all images from each
     channel. In the case of RGB images we first calculate the mean from
@@ -119,7 +121,7 @@ def normalize(inputs):
             Its shape is the same as the input.
     """
     inputs = inputs / 255.
-    inputs = (inputs - 0.5) * 2.
+    #inputs = (inputs - 0.5) * 2.
     return inputs
 
 

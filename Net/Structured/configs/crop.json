@@ -1,9 +1,9 @@
 {
   "exp_name"                  : "platenet_vgg16_1",
-  "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\plates\\",
-  "valid_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\test\\",
-  "test_root_directory"       : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\test\\",
-  "train_files_directory"     : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Train\\",
+  "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\cascade\\Good\\",
+  "valid_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\cascade\\Bad\\",
+  "test_root_directory"       : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\cascade\\",
+  "train_files_directory"     : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Train\\cascade",
   "basic_cnn"                 : "vgg16",
   "input_shape"               : [224, 224, 3],
   "is_training"               : 1,

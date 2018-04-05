@@ -1,19 +1,51 @@
 import xml.etree.cElementTree as ET
+import xml
 import numpy as np
 
+COUNTRIES = {
+    "abh" : 0,
+    "at"  : 1,
+    "by"  : 2,
+    "be"  : 3,
+    "de"  : 4,
+    "lt"  : 5,
+    "ru"  : 6,
+    "uz"  : 7,
+}
 
 class MarkupParser:
     def __init__(self):
         pass
 
     def getHumanCheckedValueAttr(self, xml_file):
+        try:
+            tree = ET.ElementTree(file=xml_file)
+            root = tree.getroot()
+            hc = root.find('HumanChecked')
+            val = hc.attrib["Value"]
+
+            if val == "True" or val == "true":
+                return True
+            else:
+                return False
+        except xml.etree.ElementTree.ParseError:
+            print(xml_file)
+
+
+
+
+    def getCountry(self, xml_file):
         tree = ET.ElementTree(file=xml_file)
         root = tree.getroot()
-        hc = root.find('HumanChecked')
+        hc = root.find('Description')
         val = hc.attrib["Value"]
 
-        if val == "True" or val == "true": return True
-        else: return False
+        if val == "":
+            print(xml_file)
+
+        return val
+
+
 
     def getBoundBoxes(self, xml_file):
         plates = []
@@ -22,6 +54,9 @@ class MarkupParser:
         root = tree.getroot()
         for plate in root.iter("Plate"):
             x, y = [], []
+            country = plate.find("Country")
+            c = country.attrib["Value"]
+
             for region in plate.iter("Region"):
                 for point in region.iter("Point"):
                     x.append(int(point.attrib["X"]))
@@ -47,12 +82,17 @@ class MarkupParser:
                 xmax = np.max(x)
                 ymax = np.max(y)
 
-                plates.append(np.stack((xmin, ymin, xmax, ymax, 1)))
+                label = None
+                try:
+                    label = COUNTRIES[c]
+                except KeyError:
+                    print(xml_file)
+
+                plates.append(np.stack((xmin, ymin, xmax, ymax, label)))
 
         plates = np.array(plates, dtype=int)
 
         return plates
-
 """
 p = MarkupParser()
 a = p.getBoundBoxes("E:/YandexDisk/testsamples/frames/Россия(RU)/2017-06-17 17-25-33.xml")

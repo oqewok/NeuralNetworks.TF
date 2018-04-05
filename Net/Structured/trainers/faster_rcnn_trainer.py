@@ -1,4 +1,5 @@
 from Structured.base.base_train import BaseTrain
+from Structured.utils.img_preproc import preprocess
 from tqdm import tqdm
 
 import numpy as np
@@ -10,6 +11,7 @@ class FasterRCNNTrainer(BaseTrain):
         super(FasterRCNNTrainer, self).__init__(sess, model, data, config, logger)
 
         self.num_iter_per_epoch = self.data.num_train
+        self.best_loss = 100000000000
 
 
     def train_epoch(self):
@@ -50,6 +52,15 @@ class FasterRCNNTrainer(BaseTrain):
 
             total_losses.append(total_loss)
 
+            if rpn_cls_loss + rpn_reg_loss < self.best_loss:
+                self.best_loss = rpn_cls_loss + rpn_reg_loss
+
+                self.model.saver.save(
+                    self.sess, os.path.join(
+                        self.config.checkpoint_dir, self.config.exp_name
+                    )
+                )
+
         loop.close()
 
         mean_rpn_cls_loss = np.mean(rpn_cls_losses)
@@ -68,28 +79,29 @@ class FasterRCNNTrainer(BaseTrain):
             print("\nrcnn reg loss:", mean_rcnn_reg_loss)
 
         print("\ntotal loss:", mean_total_loss)
+        print("best loss:", self.best_loss)
 
-        cur_it = self.model.global_step_tensor.eval(self.sess)
+        # cur_it = self.model.global_step_tensor.eval(self.sess)
 
-        summaries_dict = {
-            'rpn_cls_loss': mean_rpn_cls_loss,
-            'rpn_reg_losses': mean_rpn_reg_loss,
-            'total_loss': mean_total_loss
-        }
+        # summaries_dict = {
+        #     'rpn_cls_loss': mean_rpn_cls_loss,
+        #     'rpn_reg_losses': mean_rpn_reg_loss,
+        #     'total_loss': mean_total_loss
+        # }
+        #
+        # if self.config.with_rcnn:
+        #     summaries_dict.update({
+        #         'rcnn_cls_losses': mean_rcnn_cls_loss,
+        #         'rcnn_reg_losses': mean_rcnn_reg_loss,
+        #     })
+        #
+        # self.logger.summarize(cur_it, summaries_dict=summaries_dict)
 
-        if self.config.with_rcnn:
-            summaries_dict.update({
-                'rcnn_cls_losses': mean_rcnn_cls_loss,
-                'rcnn_reg_losses': mean_rcnn_reg_loss,
-            })
-
-        self.logger.summarize(cur_it, summaries_dict=summaries_dict)
-
-        self.model.saver.save(
-            self.sess, os.path.join(
-                self.config.checkpoint_dir, self.config.exp_name
-            )
-        )
+        # self.model.saver.save(
+        #     self.sess, os.path.join(
+        #         self.config.checkpoint_dir, self.config.exp_name
+        #     )
+        # )
 
     def train_step(self):
         """
@@ -97,7 +109,10 @@ class FasterRCNNTrainer(BaseTrain):
        - run the tensorflow session
        - return any metrics you need to summarize
        """
-        img, boxes = self.data.next_img()  # ?????
+        img, boxes = self.data.next_img()
+
+        #img = preprocess(img)
+
         feed_dict = {
             self.model.inputs_tensor: [img],
             self.model.gt_boxes: boxes,

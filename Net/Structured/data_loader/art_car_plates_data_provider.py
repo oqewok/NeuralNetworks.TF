@@ -4,6 +4,7 @@ import math
 
 from  Structured.utils.img_preproc import *
 from Structured.data_loader.json_reader import JsonReader
+from Structured.data_loader.reader import Reader
 from Structured.utils.config import process_config
 
 class ArtificalCarPlatesDataProvider():
@@ -29,7 +30,7 @@ class ArtificalCarPlatesDataProvider():
         self.batch_size = config.batch_size
         self.num_batches = int(math.ceil(self.num_train / float(self.batch_size)))
 
-        self.order = np.random.permutation(self.num_train)
+        self.order = np.arange(self.num_train)
 
 
     # Загружает данные о разметке из txt-файлов в память.
@@ -58,37 +59,44 @@ class ArtificalCarPlatesDataProvider():
         return np.array(imgs), np.array(labels)
 
 
-    def next_batch(self):
+    def next_batch(self, batch_size, type):
         ''' Reads the batch of images and bboxes
         '''
 
-        img_files = self.samples['TRAIN'][0]
-        bboxes_files = self.samples['TRAIN'][1]
+        img_files = self.samples[type][0]
+        bboxes_files = self.samples[type][1]
 
-        indices = self.order[self.batch_idx * self.batch_size:self.batch_idx * self.batch_size + self.batch_size]
+        indices = None
+        if type == "TRAIN":
+            indices = self.order[self.batch_idx * batch_size:self.batch_idx * batch_size + batch_size]
 
-        if self.batch_idx < self.num_batches - 1:
-            self.batch_idx = self.batch_idx + 1
+            if self.batch_idx < self.num_batches - 1:
+                self.batch_idx = self.batch_idx + 1
+            else:
+                self.order = np.random.permutation(self.num_train)
+                self.batch_idx = 0
+
+        elif type == "TEST":
+            indices = np.random.permutation(self.num_test)
         else:
-            self.order = np.random.permutation(self.num_train)
-            self.batch_idx = 0
+            indices = np.random.permutation(self.num_valid)
 
         img_files = img_files[indices]
-        # bboxes_files = bboxes_files[indices]
+        bboxes_files = bboxes_files[indices]
 
-        # self.images = JsonReader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
-        self.images, self.bboxes = JsonReader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
+        self.images, self.bboxes = Reader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
 
-        yield self.images, self.bboxes
+        return self.images, self.bboxes
 
 
-    def next_img(self):
+    def next_img(self, type):
         assert self.batch_size == 1
 
-        images, bboxes = next(self.next_batch())
+        images, bboxes = next(self.next_batch(1, type))
         self.images, self.bboxes = images[0], bboxes[0]
 
         return self.images, self.bboxes
+
 '''
     @staticmethod
     def load_imgs(img_files):

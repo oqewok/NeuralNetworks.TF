@@ -26,7 +26,7 @@ def main():
     # create tensorflow session
     sess = tf.InteractiveSession()
 
-    sess.run(tf.global_variables_initializer())
+    # sess.run(tf.global_variables_initializer())
 
     # create instance of the model you want
     model = PlateNetModel(config)

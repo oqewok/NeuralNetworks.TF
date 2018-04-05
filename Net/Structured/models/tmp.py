@@ -11,10 +11,10 @@ import json
 
 from Structured.utils.img_preproc import *
 
-MODEL_PATH = 'C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\\Structured\\experiments\\platenet_test_2'
+MODEL_PATH = 'C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\\Structured\\experiments\\platenet_test_3'
 SAMPLES_PATHS = ['C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Licence_plates_artificial\\']
 
-EPOCH = 30
+EPOCH = 100
 LEARNING_RATE = 0.001
 BATCH_SIZE = 20
 INPUT_SHAPE = [64, 128, 3]
@@ -268,7 +268,7 @@ with g.as_default():
     last_epoch = -1
     while dataset.epoch_completed() < EPOCH:
         (batch_x, batch_y) = dataset.next_batch(BATCH_SIZE)
-        train_step.run(feed_dict={
+        _ = session.run(train_step, feed_dict={
             model.x_placeholder: batch_x,
             model.y_placeholder: batch_y,
             model.dropout_prob: 0.5
@@ -278,7 +278,7 @@ with g.as_default():
             score_test = loss.eval(feed_dict={
                 model.x_placeholder: X2_test,
                 model.y_placeholder: Y2_test,
-                model.dropout_prob: 0.5
+                model.dropout_prob: 1.0
             })
             if score_test < best_score:
                 best_score = score_test

@@ -78,13 +78,13 @@ class CarPlatesDataProvider():
 
         self.images, self.bboxes = Reader.read_batch(img_files, bboxes_files, new_shape=self.config.input_shape)
 
-        yield self.images, self.bboxes
+        return self.images, self.bboxes
 
 
     def next_img(self):
         assert self.batch_size == 1
 
-        images, bboxes = next(self.next_batch())
+        images, bboxes = self.next_batch()
         self.images, self.bboxes = images[0], bboxes[0]
 
         return self.images, self.bboxes

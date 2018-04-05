@@ -13,23 +13,23 @@ def make_samples_file(config_file, type):
     if type == "xml":
         Reader.get_samples_file(config.train_root_directory, os.path.abspath(
             os.path.join(config.train_files_directory, "train.txt")))
-        # Reader.get_samples_file(config.valid_root_directory, os.path.abspath(
-        #     os.path.join(config.train_files_directory,"valid.txt")))
-        # Reader.get_samples_file(config.test_root_directory,  os.path.abspath(
-        #     os.path.join(config.train_files_directory,"test.txt")))
+        Reader.get_samples_file(config.valid_root_directory, os.path.abspath(
+            os.path.join(config.train_files_directory, "valid.txt")))
+        Reader.get_samples_file(config.test_root_directory,  os.path.abspath(
+            os.path.join(config.train_files_directory, "test.txt")))
     elif type == "json":
         Reader.get_samples_file_json(config.train_root_directory, os.path.abspath(
             os.path.join(config.train_files_directory, "train.txt")))
         # Reader.get_samples_file_json(config.valid_root_directory, os.path.abspath(
         #     os.path.join(config.train_files_directory, "valid.txt")))
-        # Reader.get_samples_file_json(config.test_root_directory, os.path.abspath(
-        #     os.path.join(config.train_files_directory, "test.txt")))
+        Reader.get_samples_file_json(config.test_root_directory, os.path.abspath(
+            os.path.join(config.train_files_directory, "test.txt")))
     else:
         raise ValueError("Wrong parser type")
 
 
 if __name__ == '__main__':
     make_samples_file(
-        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\\Structured\\configs\\platenet.json",
-        "json"
+        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\\Structured\\configs\\fastercnn.json",
+        "xml"
     )

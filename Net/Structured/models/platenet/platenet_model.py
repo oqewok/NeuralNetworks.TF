@@ -1,9 +1,9 @@
 from Structured.base.base_model import BaseModel
 from Structured.nets.vgg16_full import build_basic_vgg16
-from Structured.utils.losses import mse
+from Structured.utils.losses import *
 
 import tensorflow as tf
-
+import numpy as np
 
 class PlateNetModel(BaseModel):
     def __init__(self, config):
@@ -16,6 +16,8 @@ class PlateNetModel(BaseModel):
             decay_rate=self.config.lr_decay_rate,
             staircase=True
         )
+
+        # self.learning_rate = self.config.learning_rate
 
         self.momentum       = self.config.momentum
 
@@ -38,40 +40,36 @@ class PlateNetModel(BaseModel):
         self.inputs_tensor      = None
 
         # Tensor for training mode description. If true => training mode, else => evaluation mode.
-        self.is_training_tensor = None
-
-        self.bbox_reg           = None
+        self.is_train = None
 
         # Build basic CNN for feature extraction. Default is VGG16.
         ''' For example:
         elif self.config.basic_cnn == "resnet50":
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_resnet50(
             self.config)'''
+
         if self.config.basic_cnn == "vgg16":
-            self.inputs_tensor, self.bbox_reg_norm, self.gt_boxes = build_basic_vgg16(
-                self.config)
-        # self.inputs_tensor, self.is_training_tensor, self.bbox_reg, self.bbox_reg_norm, self.gt_boxes, self.gt_boxes_norm, self.inputs_norm = build_basic_vgg16(
-        #         self.config)
-        else:
-            self.inputs_tensor, self.is_training_tensor, self.bbox_reg, self.bbox_reg_norm, self.gt_boxes, self.gt_boxes_norm = build_basic_vgg16(
+            self.inputs_tensor, self.cls_prob, self.labels, self.gt_boxes, self.is_train = build_basic_vgg16(
                 self.config)
 
-        # self.labels_one_hot = tf.one_hot(self.labels, depth=self.config.num_classes)
-        #
-        # loss = tf.reduce_mean(
-        #     tf.nn.softmax_cross_entropy_with_logits_v2(
-        #         labels=self.labels_one_hot, logits=self.outputs, name="loss"
-        #     )
-        # )
+        self.labels_one_hot = tf.one_hot(self.labels, depth=self.config.num_classes)
 
-        loss = mse(self.gt_boxes, self.bbox_reg_norm)
+        self.loss = tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits_v2(
+                labels=self.labels_one_hot, logits=self.cls_prob, name="loss"
+            )
+        )
+
+        #self.bbox_loss = mse(self.bboxes, self.bbox_reg)
 
         # loss = tf.reduce_mean(
         #     tf.losses.mean_squared_error(self.gt_boxes_norm, self.bbox_reg_norm)
         # )
 
-        tf.losses.add_loss(loss)
-        self.loss = tf.losses.get_total_loss()
+        #tf.losses.add_loss(loss)
+        #self.loss = tf.losses.get_total_loss()
+
+        #self.loss = self.cls_loss + self.bbox_loss
 
         optimizer = None
         if self.optimizer_name == 'adam':
@@ -85,11 +83,11 @@ class PlateNetModel(BaseModel):
             )
 
         self.optimizer = optimizer.minimize(
-            loss=self.loss, global_step=self.global_step_tensor
+            loss=self.loss , global_step=self.global_step_tensor
         )
 
-        # self.correct_prediction = tf.equal(tf.argmax(self.outputs, 1), tf.argmax(self.labels_one_hot, 1))
-        # self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
+        self.correct_prediction = tf.equal(tf.argmax(self.cls_prob, 1), tf.argmax(self.labels_one_hot, 1))
+        self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
         print("Model built.")
         pass

@@ -1,10 +1,12 @@
-from Structured.base.base_train import BaseTrain
-from Structured.data_loader.random_image import generate_random_image
+import os
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from pylab import rcParams
 from tqdm import tqdm
 
-import tensorflow as tf
-import numpy as np
-import os
+from Structured.base.base_train import BaseTrain
+from Structured.utils.img_preproc import *
 
 
 class PlateNetTrainer(BaseTrain):
@@ -12,7 +14,34 @@ class PlateNetTrainer(BaseTrain):
         super(PlateNetTrainer, self).__init__(sess, model, data, config, logger)
 
         self.num_iter_per_epoch = self.data.num_batches
+        H, W, C = self.config.input_shape
 
+        self.X_test, self.Y_test = self.data.next_batch(self.data.num_test, "TEST")
+        #self.X_test = subtract_channels(self.X_test)
+        self.X_test = self.X_test / 255.
+        #self.Y_test = self.Y_test / (0.5 * W, 0.5 * H, 0.5 * W, 0.5 * H, 1) - 1.
+        #self.Y_test[:, 4] = self.Y_test[:, 4] + 1.
+
+        self.best_loss = 1000000000
+        self.best_cls_loss = 1000000000
+        pass
+
+    # def LoadData(self, paths):
+    #     xs = []
+    #     ys = []
+    #     for ex_paths in paths:
+    #         img_path = ex_paths[0]
+    #         ann_path = ex_paths[1]
+    #         xs.append(self.LoadImage(img_path))
+    #         ys.append(self.LoadAnnotation(ann_path))
+    #
+    #     return np.array(xs), np.array(ys)
+    #
+    #
+    # def LoadImage(self, fname):
+    #     img = io.imread(fname)
+    #     img = resize_img(img, self.config.input_shape, as_int=True) / 255.
+    #     return img
 
     def train_epoch(self):
         """
@@ -22,38 +51,32 @@ class PlateNetTrainer(BaseTrain):
         """
 
         losses = []
-        # accs = []
-
+        accs = []
+        
         loop = tqdm(range(self.num_iter_per_epoch))
 
         for _ in loop:
-            # loss, acc = self.train_step()
-            loss = self.train_step()
+            cls_loss, acc = self.train_step()
 
-            losses.append(loss)
-            # accs.append(acc)
+            losses.append(cls_loss)
+            accs.append(acc)
+            
+            if cls_loss < self.best_loss:
+               # self.best_loss = bbox_loss
+                self.best_loss = cls_loss
+                self.model.saver.save(
+                    self.sess, os.path.join(
+                        self.config.checkpoint_dir, self.config.exp_name
+                    )
+                )
 
         loop.close()
 
-        mean_loss = np.min(losses)
-        # mean_acc = np.mean(accs)
+        mean_acc = np.mean(accs)
 
-        print("\nloss:", mean_loss)
-        # print("\naccuracy:", mean_acc)
-
-        cur_it = self.model.global_step_tensor.eval(self.sess)
-
-        summaries_dict = {
-            'loss': mean_loss,
-        }
-
-        self.logger.summarize(cur_it, summaries_dict=summaries_dict)
-
-        self.model.saver.save(
-            self.sess, os.path.join(
-                self.config.checkpoint_dir, self.config.exp_name
-            )
-        )
+        print("\naccuracy:", mean_acc)
+        print("\ncls loss:", self.best_loss)
+       # print("bbox loss:", self.best_loss)
 
     def train_step(self):
         """
@@ -63,10 +86,12 @@ class PlateNetTrainer(BaseTrain):
        """
         H, W, C = self.config.input_shape
 
-        b_imgs, b_boxes = next(self.data.next_batch())
+        b_x, b_y = self.data.next_batch(self.config.batch_size, "TRAIN")
 
-        b_imgs = b_imgs / 255.
-        b_boxes = b_boxes / (0.5 * W, 0.5 * H, 0.5 * W, 0.5 * H) - 1.
+        #b_x = subtract_channels(b_x)
+        b_x = b_x / 255.
+        #b_y = b_y / (0.5 * W, 0.5 * H, 0.5 * W, 0.5 * H, 1) - 1.
+        #b_y[:, 4] = b_y[:, 4] + 1.
         # # generate random image for negative samples
         # neg_imgs = []
         # for i in range(len(img)):
@@ -89,12 +114,49 @@ class PlateNetTrainer(BaseTrain):
         # inputs = graph.get_tensor_by_name('truediv:0')
 
         feed_dict = {
-            self.model.inputs_tensor: b_imgs,
-            self.model.gt_boxes: b_boxes,
+            self.model.inputs_tensor: b_x,
+            self.model.gt_boxes: b_y,
+            self.model.is_train: True
         }
 
-        self.model.optimizer.run(feed_dict=feed_dict)
+        self.sess.run(self.model.optimizer, feed_dict=feed_dict)
 
-        loss = self.model.loss.eval(feed_dict=feed_dict)
+        cls_loss = self.model.loss.eval(feed_dict={
+            self.model.inputs_tensor: self.X_test,
+            self.model.gt_boxes: self.Y_test,
+            self.model.is_train: False,
+        })
+        '''bbox_loss = self.model.bbox_loss.eval(feed_dict={
+            self.model.inputs_tensor: self.X_test,
+            self.model.gt_boxes: self.Y_test,
+            self.model.is_train: False,
+        })'''
+        acc = self.model.accuracy.eval(feed_dict={
+            self.model.inputs_tensor: self.X_test,
+            self.model.gt_boxes: self.Y_test,
+            self.model.is_train: False,
+        })
+        return cls_loss, acc
 
-        return loss
+
+def show_image(image, labels, gt=None):
+    plt.imshow(image)
+    gca = plt.gca()
+
+    if gt is not None:
+        rect = Rectangle((gt[0], gt[1]), gt[2] - gt[0], gt[3] - gt[1], edgecolor='b',
+                         fill=False)
+        gca.add_patch(rect)
+
+    rect = Rectangle((labels[0], labels[1]), labels[2] - labels[0], labels[3] - labels[1], edgecolor='r', fill=False)
+    gca.add_patch(rect)
+
+
+def plot_images(images, labels, gt=None):
+    rcParams['figure.figsize'] = 14, 8
+    plt.gray()
+    fig = plt.figure()
+    for i in range(min(9, images.shape[0])):
+        fig.add_subplot(3, 3, i + 1)
+        show_image(images[i], labels[i], gt[i])
+    plt.show()

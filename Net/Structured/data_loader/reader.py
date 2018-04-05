@@ -83,9 +83,10 @@ class Reader():
             bboxes = Reader.parse_bbox_file(bboxes_files[i])
 
             if new_shape != None:
-                image, bboxes = resize_img(image, new_shape, bboxes, as_int=True)
+                image, bboxes = resize_img(image, new_shape, bboxes, as_int=False)
 
             images.append(image)
+            #bboxes_all.append(bboxes[0])
             bboxes_all.append(bboxes)
 
         return np.array(images), np.array(bboxes_all)

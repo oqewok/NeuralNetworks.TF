@@ -23,7 +23,7 @@ def get_vgg16_pretrained():
         sess.run(init)
         print("variables initialized")
 
-        ops = graph.get_operations()
+        #ops = graph.get_operations()
         feature_map = graph.get_tensor_by_name("import/conv5_3/Relu:0")
 
         feats_shape = list(np.array(feature_map.shape[1:4], np.int32))

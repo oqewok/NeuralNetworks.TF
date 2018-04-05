@@ -11,6 +11,10 @@ COUNTRIES = {
     "lt"  : 5,
     "ru"  : 6,
     "uz"  : 7,
+    "ua"  : 8,
+    "kz"  : 9,
+    "lv"  : 10,
+    "fi"  : 11,
 }
 
 class MarkupParser:

@@ -203,8 +203,8 @@ class MainForm(QMainWindow, MainWindow):
                     coord[:, 3] = coord[:, 3] / H * scalingY
 
                     # result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
-                    painter.paint_rectangles(coord[0:50])
-                    print(scores[0:50])
+                    painter.paint_rectangles(coord[scores >= 0.5])
+                    print(scores)
                     # if result == False:
                     #     self.showWarn("Warning", "Одна из областей не была нарисована")
                     #     pass

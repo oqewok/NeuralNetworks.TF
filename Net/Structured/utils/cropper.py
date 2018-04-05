@@ -2,9 +2,12 @@ from Structured.data_loader.art_car_plates_data_provider import ArtificalCarPlat
 from Structured.data_loader.reader import Reader
 from Structured.utils.config import process_config
 from skimage import io
+import matplotlib.pyplot as plt
 
+import collections
 import numpy as np
 import os
+
 
 def crop_good():
     config = process_config(
@@ -23,21 +26,51 @@ def crop_good():
 
     with open(path, "w") as writer:
         for i in range(len(X)):
-            base_name = os.path.basename(X[i])
-            H, W, C = io.imread(X[i]).shape
-            boxes = Reader.parse_bbox_file(Y[i])
+            newX = X[i]#.replace(" ", "_")
+            newY = Y[i]#.replace(" ", "_")
 
-            xmin, ymin, xmax, ymax, _ = np.split(boxes[0], 5)
-            w = xmax - xmin
-            h = ymax - ymin
+            # os.rename(X[i], newX)
+            # os.rename(Y[i], newY)
 
-            widths.append(w / W * 224)
-            heights.append(h / H * 224)
+            base_name = os.path.basename(newX)
+            shape = io.imread(newX).shape
 
-            result_str = "Good\\" + base_name + " 1 " + str(xmin[0]) + " " + str(ymin[0]) + " " + str(w[0]) + " " + str(h[0]) + "\n"
-            writer.write(result_str)
+            H, W, C = None, None, None
+            if len(shape) == 2:
+                H, W = shape
+            else:
+                H, W, C = shape
+
+            try:
+                boxes = Reader.parse_bbox_file(newY)
+
+                xmin, ymin, xmax, ymax, _ = np.split(boxes, 5, axis=1)
+
+                r, c = xmin.shape
+
+                # if r > 1:
+                #     print()
+
+                w = np.reshape(xmax - xmin, [r])
+                h = np.reshape(ymax - ymin, [r])
+
+                for j in range(r):
+                    widths.append(w[j] / W * 224)
+                    heights.append(h[j] / H * 224)
+
+            except TypeError:
+                print(newY)
+
+            # result_str = "Good\\" + base_name + " 1 " + str(xmin[0]) + " " + str(ymin[0]) + " " + str(w[0]) + " " + str(h[0]) + "\n"
+            # writer.write(result_str)
 
     ratios = np.array(widths) / np.array(heights)
+    ratios = ratios.reshape(len(ratios))
+
+    c = collections.Counter(ratios)
+    k = list(c.keys())
+    v = list(c.values())
+
     print('min ratio', np.min(ratios))
     print('mean ratio', np.mean(ratios))
     print('max ratio', np.max(ratios))
@@ -53,6 +86,17 @@ def crop_good():
     print('max height', np.max(heights))
     print('std height', np.std(heights))
 
+    plt.title("Lol")
+    plt.xlabel("ratios")
+    plt.ylabel("count")
+
+    #plt.axis([0, np.max(k), 0, np.max(v)])
+    plt.axis("auto")
+    plt.scatter(k, v, edgecolors='r', s=5)
+
+    plt.grid(True, linestyle=':', color='0.75')
+
+    plt.show()
 
 def crop_bad():
     config = process_config(
@@ -75,5 +119,5 @@ def crop_bad():
 
 if __name__ == '__main__':
     crop_good()
-    crop_bad()
+    #crop_bad()
 

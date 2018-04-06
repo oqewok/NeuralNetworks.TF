@@ -1,6 +1,6 @@
 {
   "exp_name"                  : "platenet_vgg16_1",
-  "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\cascade\\Good\\",
+  "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\",
   "valid_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\cascade\\Bad\\",
   "test_root_directory"       : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\cascade\\",
   "train_files_directory"     : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\cascade\\Train\\",

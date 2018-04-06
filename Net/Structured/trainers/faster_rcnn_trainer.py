@@ -12,6 +12,8 @@ class FasterRCNNTrainer(BaseTrain):
 
         self.num_iter_per_epoch = self.data.num_train
         self.best_loss = 100000000000
+        self.best_rpn_loss = 100000000000
+        self.best_cls_loss = 100000000000
 
 
     def train_epoch(self):
@@ -52,14 +54,8 @@ class FasterRCNNTrainer(BaseTrain):
 
             total_losses.append(total_loss)
 
-            if rpn_cls_loss + rpn_reg_loss < self.best_loss:
-                self.best_loss = rpn_cls_loss + rpn_reg_loss
+            cur_it = self.model.global_step_tensor.eval(self.sess)
 
-                self.model.saver.save(
-                    self.sess, os.path.join(
-                        self.config.checkpoint_dir, self.config.exp_name
-                    )
-                )
 
         loop.close()
 
@@ -79,10 +75,25 @@ class FasterRCNNTrainer(BaseTrain):
             print("\nrcnn reg loss:", mean_rcnn_reg_loss)
 
         print("\ntotal loss:", mean_total_loss)
-        print("best loss:", self.best_loss)
 
-        # cur_it = self.model.global_step_tensor.eval(self.sess)
+        if mean_rpn_cls_loss + mean_rpn_reg_loss < self.best_loss:
+            self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss
 
+            self.model.saver.save(
+                self.sess, os.path.join(
+                    self.config.checkpoint_dir, self.config.exp_name
+                )
+            )
+
+            pb_file = os.path.join(
+                self.config.checkpoint_dir,
+                "fasterrcnn.pb")
+
+            with open(pb_file, 'wb') as f:
+                f.write(self.sess.graph_def.SerializeToString())
+
+
+        print(print("\nbest loss:", self.best_loss))
         # summaries_dict = {
         #     'rpn_cls_loss': mean_rpn_cls_loss,
         #     'rpn_reg_losses': mean_rpn_reg_loss,

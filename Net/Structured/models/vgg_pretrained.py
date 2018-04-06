@@ -9,7 +9,7 @@ def get_vgg16_pretrained():
     graph_def = tf.GraphDef()
     graph_def.ParseFromString(fileContent)
 
-    images = tf.placeholder("float", [None, 224, 224, 3])
+    images = tf.placeholder("float", [None, 224, 224, 3], name="inputs")
 
     tf.import_graph_def(graph_def, input_map={
         "images": images

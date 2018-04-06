@@ -33,6 +33,7 @@ def weight(name, shape, init='normal', reg=0.0, range=0.1, stddev=0.01, scale=1.
 def bias(name, dim, init_val=0.0):
     """ Get a bias variable. """
     dims = dim if isinstance(dim, list) else [dim]
+    # return tf.constant(init_val, shape=dims, name=name)
     return tf.get_variable(name, dims, initializer=tf.constant_initializer(init_val))
 
 

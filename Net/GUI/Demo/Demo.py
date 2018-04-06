@@ -374,8 +374,8 @@ class TFSessionHolder():
             path = FullMetaFileName[:-5]
             self.saver.restore(self.sess, path)
 
-            # self.x = self.graph.get_tensor_by_name('inputs:0')
-            self.x = self.graph.get_tensor_by_name('Placeholder:0')
+            self.x = self.graph.get_tensor_by_name('inputs:0')
+            # self.x = self.graph.get_tensor_by_name('Placeholder:0')
             # self.y = self.graph.get_tensor_by_name('outputs:0')
             # self.y = self.graph.get_tensor_by_name('outputs/xw_plus_b:0')
             self.y = self.graph.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
@@ -399,21 +399,20 @@ class TFSessionHolder():
     def evaluate(self, imgage_array):
         try:
             with self.sess.as_default():
-                print('Evaluating started...')
-                self.prediction = self.y.eval(
-                    feed_dict={
-                        self.x: imgage_array,
-                        self.is_train: False
-                        #self.dropout: 1.0
-                    }
-                )
-                self.scores = self.probs.eval(
-                    feed_dict={
-                        self.x: imgage_array,
-                        self.is_train: False
-                        # self.dropout: 1.0
-                    }
-                )
+                with tf.device("/cpu:0"):
+                    print('Evaluating started...')
+                    self.prediction = self.y.eval(
+                        feed_dict={
+                            self.x: imgage_array,
+                            self.is_train: False
+                        }
+                    )
+                    self.scores = self.probs.eval(
+                        feed_dict={
+                            self.x: imgage_array,
+                            self.is_train: False
+                        }
+                    )
 
                 #self.prediction = (self.prediction + 1) * (0.5*W, 0.5*H, 0.5*W, 0.5*H)
 

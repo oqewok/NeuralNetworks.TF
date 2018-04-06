@@ -13,6 +13,7 @@ class BaseTrain:
         self.data = data
         self.init = tf.global_variables_initializer()
         self.sess.run(self.init)
+        self.sess.run(tf.local_variables_initializer())
 
 
     def train(self):

@@ -54,9 +54,6 @@ class FasterRCNNTrainer(BaseTrain):
 
             total_losses.append(total_loss)
 
-            cur_it = self.model.global_step_tensor.eval(self.sess)
-
-
         loop.close()
 
         mean_rpn_cls_loss = np.mean(rpn_cls_losses)
@@ -76,14 +73,24 @@ class FasterRCNNTrainer(BaseTrain):
 
         print("\ntotal loss:", mean_total_loss)
 
-        if mean_rpn_cls_loss + mean_rpn_reg_loss < self.best_loss:
-            self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss
+        if self.config.with_rcnn:
+            if mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss < self.best_loss:
+                self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss
 
-            self.model.saver.save(
-                self.sess, os.path.join(
-                    self.config.checkpoint_dir, self.config.exp_name
+                self.model.saver.save(
+                    self.sess, os.path.join(
+                        self.config.checkpoint_dir, self.config.exp_name
+                    )
                 )
-            )
+        else:
+            if mean_rpn_cls_loss + mean_rpn_reg_loss < self.best_loss:
+                self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss
+
+                self.model.saver.save(
+                    self.sess, os.path.join(
+                        self.config.checkpoint_dir, self.config.exp_name
+                    )
+                )
 
             pb_file = os.path.join(
                 self.config.checkpoint_dir,

@@ -71,8 +71,8 @@ class RCNNProposal:
         for class_id in range(self.num_classes):
             # Apply the class-specific transformations to the proposals to
             # obtain the current class' prediction.
-            class_prob          = cls_prob[:, class_id]  # 0 is background class.
-            #class_prob          = cls_prob[:, class_id + 1]  # 0 is background class.
+            #class_prob          = cls_prob[:, class_id]  # 0 is background class.
+            class_prob          = cls_prob[:, class_id + 1]  # 0 is background class.
             class_bboxes        = bbox_pred[:, (4 * class_id):(4 * class_id + 4)]
 
             raw_class_objects   = decode(

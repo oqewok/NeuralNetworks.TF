@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 import random
 from skimage import io
 from Structured.utils.img_preproc import *
+from Structured.data_loader.parser import COUNTRIES_R
 
 import data_reader as reader
 
@@ -180,7 +181,7 @@ class MainForm(QMainWindow, MainWindow):
         try:
             if (self.imageContainer.dataCopy is not None):
 
-                result, coord, scores = self.TFSession.evaluate(self.imageContainer.image_array)
+                result, coord, labels, scores = self.TFSession.evaluate(self.imageContainer.image_array)
 
                 if (result is True):
                     painter = Painter(self.imageContainer.dataCopy)
@@ -204,7 +205,7 @@ class MainForm(QMainWindow, MainWindow):
 
                     # result = painter.paint_rectangle(tmp_coordX1, tmp_coordY1, tmp_coordX2, tmp_coordY2, None)
                     painter.paint_rectangles(coord[scores >= 0.5])
-                    print(scores)
+
                     # if result == False:
                     #     self.showWarn("Warning", "Одна из областей не была нарисована")
                     #     pass
@@ -378,8 +379,9 @@ class TFSessionHolder():
             # self.x = self.graph.get_tensor_by_name('Placeholder:0')
             # self.y = self.graph.get_tensor_by_name('outputs:0')
             # self.y = self.graph.get_tensor_by_name('outputs/xw_plus_b:0')
-            self.y = self.graph.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
-            self.probs = self.graph.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
+            self.boxes = self.graph.get_tensor_by_name('rcnn_prediction/bboxes:0')
+            self.labels = self.graph.get_tensor_by_name('rcnn_prediction/labels:0')
+            self.probs = self.graph.get_tensor_by_name('rcnn_prediction/TopKV2:0')
 
             #self.dropout = self.graph.get_tensor_by_name('Placeholder_2:0')
             self.is_train = self.graph.get_tensor_by_name('is_train:0')
@@ -401,26 +403,22 @@ class TFSessionHolder():
             with self.sess.as_default():
                 with tf.device("/cpu:0"):
                     print('Evaluating started...')
-                    self.prediction = self.y.eval(
+                    self.prediction, self.classes, self.scores = self.sess.run(
+                        [self.boxes, self.labels, self.probs],
                         feed_dict={
                             self.x: image_array,
                             self.is_train: False
                         }
                     )
-                    self.scores = self.probs.eval(
-                        feed_dict={
-                            self.x: image_array,
-                            self.is_train: False
-                        }
-                    )
-
-                #self.prediction = (self.prediction + 1) * (0.5*W, 0.5*H, 0.5*W, 0.5*H)
+                countries = np.array(list(COUNTRIES_R.values()))
 
                 print(self.prediction)
+                print(self.scores)
+                print(countries[self.classes])
                 print('Evaluating ended!')
 
                 result = True
-                return result, self.prediction, self.scores
+                return result, self.prediction, self.classes, self.scores
             pass
 
         except Exception as e:

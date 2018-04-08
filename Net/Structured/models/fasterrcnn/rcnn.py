@@ -123,8 +123,8 @@ class RCNN:
         # We define the classifier layer having a num_classes + 1 background
         # since we want to be able to predict if the proposal is background as
         # well.
-        self.cls_scores = fully_connected(fc7_feats, self.num_classes, 'fc_cls', init_w='normal', reg=self.reg, group_id=2)
-        #self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
+        # self.cls_scores = fully_connected(fc7_feats, self.num_classes, 'fc_cls', init_w='normal', reg=self.reg, group_id=2)
+        self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
         self.cls_prob = tf.nn.softmax(self.cls_scores)
 
         # The bounding box adjustment layer has 4 times the number of classes
@@ -191,16 +191,16 @@ class RCNN:
 
             # Transform to one-hot vector
             cls_target_one_hot = tf.one_hot(
-                #cls_target_labeled, depth=self.num_classes + 1,
-                cls_target_labeled, depth=self.num_classes,
+                cls_target_labeled, depth=self.num_classes + 1,
+                #cls_target_labeled, depth=self.num_classes,
                 name='cls_target_one_hot'
             )
 
             # We get cross entropy loss of each proposal.
             cross_entropy_per_proposal = (
-                tf.nn.softmax_cross_entropy_with_logits(
-                    #labels=tf.stop_gradient(cls_target_one_hot),
-                    labels=cls_target_one_hot,
+                tf.nn.softmax_cross_entropy_with_logits_v2(
+                    labels=tf.stop_gradient(cls_target_one_hot),
+                    #labels=cls_target_one_hot,
                     logits=cls_score_labeled
                 )
             )

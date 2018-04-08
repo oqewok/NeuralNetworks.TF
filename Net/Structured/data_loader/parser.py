@@ -17,6 +17,21 @@ COUNTRIES = {
     "fi"  : 11,
 }
 
+COUNTRIES_R = {
+    0   : "abh",
+    1   : "at",
+    2   : "by",
+    3   : "be",
+    4   : "de",
+    5   : "lt",
+    6   : "ru",
+    7   : "uz",
+    8   : "ua",
+    9   : "kz",
+    10  : "lv",
+    11  : "fi",
+}
+
 class MarkupParser:
     def __init__(self):
         pass

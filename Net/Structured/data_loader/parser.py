@@ -51,19 +51,13 @@ class MarkupParser:
             print(xml_file)
 
 
-
-
     def getCountry(self, xml_file):
         tree = ET.ElementTree(file=xml_file)
         root = tree.getroot()
-        hc = root.find('Description')
-        val = hc.attrib["Value"]
 
-        if val == "":
-            print(xml_file)
-
-        return val
-
+        for plate in root.iter("Plate"):
+            country = plate.find("Country")
+            return country.attrib["Value"]
 
 
     def getBoundBoxes(self, xml_file):
@@ -105,7 +99,8 @@ class MarkupParser:
                 try:
                     label = COUNTRIES[c]
                 except KeyError:
-                    print(xml_file)
+                    #print(xml_file)
+                    label = 100
 
                 plates.append(np.stack((xmin, ymin, xmax, ymax, label)))
 

@@ -29,7 +29,9 @@ class CarPlatesDataProvider():
         self.batch_size = config.batch_size
         self.num_batches = int(math.ceil(self.num_train / float(self.batch_size)))
 
-        self.order = np.random.permutation(self.num_train)
+        self.order = np.arange(self.num_train)
+
+        self.X_val, Y_val = self.samples['VALID'][0], self.samples['VALID'][1]
 
 
     # Загружает данные о разметке из txt-файлов в память.
@@ -37,7 +39,7 @@ class CarPlatesDataProvider():
     def getSamplesFilenames(directory):
         '''   @:return: list of [[img_file1, label_file1], [img_file2, label_file2], ...]
         '''
-        f = open(directory, 'r')
+        f = open(directory, 'r', encoding='utf-8')
         imgs, labels = [], []
 
         for line in f:
@@ -57,21 +59,27 @@ class CarPlatesDataProvider():
         f.close()
         return np.array(imgs), np.array(labels)
 
-
-    def next_batch(self):
+    def next_batch(self, batch_size=1, type="TRAIN"):
         ''' Reads the batch of images and bboxes
         '''
 
-        img_files = self.samples['TRAIN'][0]
-        bboxes_files = self.samples['TRAIN'][1]
+        img_files = self.samples[type][0]
+        bboxes_files = self.samples[type][1]
 
-        indices = self.order[self.batch_idx * self.batch_size:self.batch_idx * self.batch_size + self.batch_size]
+        indices = None
+        if type == "TRAIN":
+            indices = self.order[self.batch_idx * batch_size:self.batch_idx * batch_size + batch_size]
 
-        if self.batch_idx < self.num_batches - 1:
-            self.batch_idx = self.batch_idx + 1
+            if self.batch_idx < self.num_batches - 1:
+                self.batch_idx = self.batch_idx + 1
+            else:
+                self.order = np.random.permutation(self.num_train)
+                self.batch_idx = 0
+
+        elif type == "TEST":
+            indices = np.random.permutation(self.num_test)
         else:
-            self.order = np.random.permutation(self.num_train)
-            self.batch_idx = 0
+            indices = np.random.permutation(self.num_valid)
 
         img_files = img_files[indices]
         bboxes_files = bboxes_files[indices]

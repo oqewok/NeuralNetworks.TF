@@ -25,11 +25,14 @@ class Reader():
 
         # Get xml-parser
         parser = MarkupParser()
-        with open(samples_file, "w") as result_file:
+        with open(samples_file, "w", encoding='utf-8') as result_file:
             # get labels directory
             for root, dirs, files in os.walk(directory):
                 files = filter(
-                    lambda x: x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png') or x.endswith('.bmp'),
+                    lambda x: x.endswith('.jpg') or x.endswith('.JPG')
+                              or x.endswith('.jpeg') or x.endswith('.JPEG')
+                              or x.endswith('.png') or x.endswith('.PNG')
+                              or x.endswith('.bmp') or x.endswith('.BMP'),
                     files)
                 for file in files:
                     filepath = os.path.abspath(
@@ -80,6 +83,8 @@ class Reader():
 
         for i in range(len(img_files)):
             image = io.imread(img_files[i])
+            if len(image.shape) != 2 and len(image.shape) != 3:
+                image = image[0]
             bboxes = Reader.parse_bbox_file(bboxes_files[i])
 
             if new_shape != None:

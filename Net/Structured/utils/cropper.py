@@ -1,4 +1,4 @@
-from Structured.data_loader.art_car_plates_data_provider import ArtificalCarPlatesDataProvider
+from Structured.data_loader.car_plates_data_provider import CarPlatesDataProvider
 from Structured.data_loader.reader import Reader
 from Structured.utils.config import process_config
 from skimage import io
@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import collections
 import numpy as np
 import os
-
+from tqdm import tqdm
 
 def crop_good():
     config = process_config(
-        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\configs\\crop.json")
+        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\configs\\fastercnn.json")
 
-    data = ArtificalCarPlatesDataProvider(config)
+    data = CarPlatesDataProvider(config)
 
     X, Y = data.samples["TRAIN"][0], data.samples["TRAIN"][1]
 
@@ -25,7 +25,7 @@ def crop_good():
     heights = []
 
     with open(path, "w") as writer:
-        for i in range(len(X)):
+        for i in tqdm(range(len(X))):
             newX = X[i]#.replace(" ", "_")
             newY = Y[i]#.replace(" ", "_")
 
@@ -33,13 +33,16 @@ def crop_good():
             # os.rename(Y[i], newY)
 
             base_name = os.path.basename(newX)
-            shape = io.imread(newX).shape
+            img = io.imread(newX)
+            shape = img.shape
 
             H, W, C = None, None, None
             if len(shape) == 2:
                 H, W = shape
-            else:
+            elif len(shape) == 3:
                 H, W, C = shape
+            else:
+                H, W, C = img[0].shape
 
             try:
                 boxes = Reader.parse_bbox_file(newY)
@@ -100,7 +103,7 @@ def crop_good():
 
 def crop_bad():
     config = process_config(
-        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\configs\\crop.json")
+        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\configs\\fastercnn.json")
 
     path = "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\cascade\\Bad.dat"
 

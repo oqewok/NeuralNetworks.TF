@@ -124,7 +124,7 @@ class RCNN:
         # since we want to be able to predict if the proposal is background as
         # well.
         # self.cls_scores = fully_connected(fc7_feats, self.num_classes, 'fc_cls', init_w='normal', reg=self.reg, group_id=2)
-        self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', group_id=2)
+        self.cls_scores = fully_connected(fc7_feats, self.num_classes + 1, 'fc_cls', init_w='normal', reg=self.reg, group_id=2)
         self.cls_prob = tf.nn.softmax(self.cls_scores)
 
         # The bounding box adjustment layer has 4 times the number of classes

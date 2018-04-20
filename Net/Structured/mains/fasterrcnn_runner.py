@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from Structured.data_loader.car_plates_data_provider import CarPlatesDataProvider
-from Structured.models.fasterrcnn.faster_rcnn_model2 import FasterRCNNModel
+from Structured.models.fasterrcnn.faster_rcnn_model import FasterRCNNModel
 from Structured.trainers.faster_rcnn_trainer import FasterRCNNTrainer
 from Structured.utils.config import process_config
 from Structured.utils.dirs import create_dirs

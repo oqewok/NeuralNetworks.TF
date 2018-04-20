@@ -38,7 +38,7 @@ class ArtificalCarPlatesDataProvider():
     def getSamplesFilenames(directory):
         '''   @:return: list of [[img_file1, label_file1], [img_file2, label_file2], ...]
         '''
-        f = open(directory, 'r')
+        f = open(directory, 'r', encoding='utf-8')
         imgs, labels = [], []
 
         for line in f:

@@ -28,6 +28,8 @@ class FasterRCNNTrainer(BaseTrain):
         rcnn_cls_losses = []
         rcnn_reg_losses = []
 
+        regularization_losses = []
+
         total_losses = []
         loop = tqdm(range(self.num_iter_per_epoch))
 
@@ -36,17 +38,19 @@ class FasterRCNNTrainer(BaseTrain):
         rcnn_cls_loss = 0
         rcnn_reg_loss = 0
         total_loss = 0
+        regularization_loss = 0
 
         for i in loop:
             if self.config.with_rcnn:
-                rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss = self.train_step()
-                total_loss = rpn_cls_loss + rpn_reg_loss + rcnn_cls_loss + rcnn_reg_loss
+                rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss = self.train_step()
+                total_loss = rpn_cls_loss + rpn_reg_loss + rcnn_cls_loss + rcnn_reg_loss + regularization_loss
             else:
-                rpn_cls_loss, rpn_reg_loss = self.train_step()
-                total_loss = rpn_cls_loss + rpn_reg_loss
+                rpn_cls_loss, rpn_reg_loss, regularization_loss = self.train_step()
+                total_loss = rpn_cls_loss + rpn_reg_loss + regularization_loss
 
             rpn_cls_losses.append(rpn_cls_loss)
             rpn_reg_losses.append(rpn_reg_loss)
+            regularization_losses.append(regularization_loss)
 
             if self.config.with_rcnn:
                 rcnn_cls_losses.append(rcnn_cls_loss)
@@ -58,6 +62,8 @@ class FasterRCNNTrainer(BaseTrain):
 
         mean_rpn_cls_loss = np.mean(rpn_cls_losses)
         mean_rpn_reg_loss = np.mean(rpn_reg_losses)
+
+        mean_regularization_loss = np.mean(regularization_losses)
 
         mean_rcnn_cls_loss = np.mean(rcnn_cls_losses)
         mean_rcnn_reg_loss = np.mean(rcnn_reg_losses)
@@ -72,6 +78,8 @@ class FasterRCNNTrainer(BaseTrain):
             print("\nrcnn reg loss:", mean_rcnn_reg_loss)
 
         print("\ntotal loss:", mean_total_loss)
+        print("\n regularization loss:", mean_regularization_loss)
+        print("\n total - regularization loss:", mean_total_loss - mean_regularization_loss)
 
         if self.config.with_rcnn:
             if mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss < self.best_loss:
@@ -83,7 +91,7 @@ class FasterRCNNTrainer(BaseTrain):
                     )
                 )
         else:
-            if mean_rpn_cls_loss + mean_rpn_reg_loss < self.best_loss:
+            if mean_rpn_cls_loss + mean_rpn_reg_loss  < self.best_loss:
                 self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss
 
                 self.model.saver.save(
@@ -139,26 +147,51 @@ class FasterRCNNTrainer(BaseTrain):
 
         # self.sess = tf_debug.TensorBoardDebugWrapperSession(self.sess, "1080Ti:8908")
         if self.config.with_rcnn:
-            _, rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss = self.sess.run(
+            _, rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss = self.sess.run(
                 [
                     self.model.optimizer,
                     self.model.rpn_cls_loss,
                     self.model.rpn_reg_loss,
                     self.model.rcnn_cls_loss,
-                    self.model.rcnn_reg_loss
+                    self.model.rcnn_reg_loss,
+                    self.model.regularization_loss,
                 ],
                 feed_dict=feed_dict
             )
 
-            return rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss
+            return rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss
         else:
-            _, rpn_cls_loss, rpn_reg_loss = self.sess.run(
+            _, rpn_cls_loss, rpn_reg_loss, regularization_loss = self.sess.run(
                 [
                     self.model.optimizer,
                     self.model.rpn_cls_loss,
                     self.model.rpn_reg_loss,
+                    self.model.regularization_loss,
                 ],
                 feed_dict=feed_dict
             )
 
-            return rpn_cls_loss, rpn_reg_loss
+            return rpn_cls_loss, rpn_reg_loss, regularization_loss
+
+
+    def valid(self):
+        X_val, Y_val = self.data.X_val, self.data.Y_val
+
+        for i in range(len(X_val)):
+            img, boxes = self.data.next_img()
+
+            feed_dict = {
+                self.model.inputs_tensor: [img],
+                self.model.gt_boxes: boxes,
+                self.model.is_training_tensor: self.model.is_training,
+            }
+
+            _, rpn_cls_loss, rpn_reg_loss, regularization_loss = self.sess.run(
+                [
+                    self.model.optimizer,
+                    self.model.rpn_cls_loss,
+                    self.model.rpn_reg_loss,
+                    self.model.regularization_loss,
+                ],
+                feed_dict=feed_dict
+            )

@@ -9,15 +9,14 @@ import tensorflow as tf
 class FasterRCNNModel(BaseModel):
     def __init__(self, config):
         super(FasterRCNNModel, self).__init__(config)
-        #
-        # self.learning_rate  = tf.train.exponential_decay(
-        #     learning_rate=self.config.learning_rate,
-        #     global_step=self.global_step_tensor,
-        #     decay_steps=self.config.lr_decay_steps,
-        #     decay_rate=self.config.lr_decay_rate,
-        #     staircase=True
-        # )
-        self.learning_rate = self.config.learning_rate
+
+        self.learning_rate  = tf.train.exponential_decay(
+            learning_rate=self.config.learning_rate,
+            global_step=self.global_step_tensor,
+            decay_steps=self.config.lr_decay_steps,
+            decay_rate=self.config.lr_decay_rate,
+            staircase=True
+        )
 
         self.momentum       = self.config.momentum
 
@@ -85,6 +84,7 @@ class FasterRCNNModel(BaseModel):
                 # it differently so we can visualize it independently.
 
             self.loss = tf.losses.get_total_loss()
+            self.regularization_loss = tf.losses.get_regularization_loss()
 
         optimizer = None
         if self.optimizer_name == 'adam':

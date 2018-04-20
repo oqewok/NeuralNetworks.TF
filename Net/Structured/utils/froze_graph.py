@@ -5,18 +5,18 @@ from tensorflow.python.framework.graph_util import convert_variables_to_constant
 import os
 
 path = os.path.join(
-    "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_5\\checkpoint\\vgg16_rpn_1000_5.meta"
+    "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\checkpoint\\vgg16_rpn_1000_7.meta"
 )
 
 with tf.Session() as sess:
     saver = tf.train.import_meta_graph(path)
     saver.restore(
         sess, tf.train.latest_checkpoint(
-            "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_5\\checkpoint"
+            "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\checkpoint"
         )
     )
 
-    dir = "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_5\\"
+    dir = "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\"
 
     # pb_file = os.path.join(
     #     dir,

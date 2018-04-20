@@ -5,7 +5,7 @@ import os
 
 def get_rpn_pretrained():
     path = os.path.join(
-        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_5\\checkpoint\\vgg16_rpn_1000_5.meta"
+        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\checkpoint\\vgg16_rpn_1000_7.meta"
     )
 
     with tf.Session() as sess:
@@ -15,7 +15,7 @@ def get_rpn_pretrained():
         saver = tf.train.import_meta_graph(path)
         saver.restore(
             sess, tf.train.latest_checkpoint(
-                "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_5\\checkpoint"
+                "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\checkpoint"
             )
         )
 

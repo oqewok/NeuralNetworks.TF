@@ -1,10 +1,10 @@
 {
-  "exp_name"                  : "vgg16_rpn_10500_2",
+  "exp_name"                  : "mobilenet_v2_rpn_10500_1",
   "train_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\",
   "valid_root_directory"      : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\abh",
   "test_root_directory"       : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\",
   "train_files_directory"     : "C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\Train\\",
-  "basic_cnn"                 : "vgg16",
+  "basic_cnn"                 : "mobilenet_v2_1.0_224",
   "with_rcnn"                 : 0,
   "input_shape"               : [224, 224, 3],
   "is_training"               : 1,

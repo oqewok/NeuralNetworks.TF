@@ -4,6 +4,7 @@ from Structured.base.base_model import BaseModel
 from Structured.models.fasterrcnn.rcnn import RCNN
 from Structured.models.fasterrcnn.rpn import RPN
 from Structured.nets.vgg16_pretrained import get_vgg16_pretrained
+from Structured.nets.mobilenet_v2_1_0_224_pretrained import get_mobilenet_pretrained
 
 
 class FasterRCNNModel(BaseModel):
@@ -61,6 +62,8 @@ class FasterRCNNModel(BaseModel):
             #self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_vgg16(
             #    self.config)
             self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_vgg16_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_1.0_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_pretrained()
 
         # Build RPN
         self.rpn = RPN(

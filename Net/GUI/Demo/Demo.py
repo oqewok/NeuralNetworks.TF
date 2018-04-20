@@ -399,20 +399,19 @@ class TFSessionHolder():
     def evaluate(self, image_array):
         try:
             with self.sess.as_default():
-                with tf.device("/cpu:0"):
-                    print('Evaluating started...')
-                    self.prediction = self.y.eval(
-                        feed_dict={
-                            self.x: image_array,
-                            self.is_train: False
-                        }
-                    )
-                    self.scores = self.probs.eval(
-                        feed_dict={
-                            self.x: image_array,
-                            self.is_train: False
-                        }
-                    )
+                print('Evaluating started...')
+                self.prediction = self.y.eval(
+                    feed_dict={
+                        self.x: image_array,
+                        self.is_train: False
+                    }
+                )
+                self.scores = self.probs.eval(
+                    feed_dict={
+                        self.x: image_array,
+                        self.is_train: False
+                    }
+                )
 
                 #self.prediction = (self.prediction + 1) * (0.5*W, 0.5*H, 0.5*W, 0.5*H)
 

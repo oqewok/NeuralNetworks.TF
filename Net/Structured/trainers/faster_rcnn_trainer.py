@@ -1,5 +1,5 @@
 from Structured.base.base_train import BaseTrain
-from Structured.utils.img_preproc import preprocess
+from Structured.utils.bbox_overlap import bbox_overlap
 from tqdm import tqdm
 
 import numpy as np
@@ -177,7 +177,12 @@ class FasterRCNNTrainer(BaseTrain):
     def valid(self):
         X_val, Y_val = self.data.X_val, self.data.Y_val
 
-        for i in range(len(X_val)):
+        y = self.sess.graph_def.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
+        probs = self.sess.graph_def.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
+        losses = []
+        ious = []
+
+        for _ in tqdm(range(len(X_val))):
             img, boxes = self.data.next_img()
 
             feed_dict = {
@@ -186,12 +191,21 @@ class FasterRCNNTrainer(BaseTrain):
                 self.model.is_training_tensor: self.model.is_training,
             }
 
-            _, rpn_cls_loss, rpn_reg_loss, regularization_loss = self.sess.run(
+            boxes, p, loss, regularization_loss = self.sess.run(
                 [
-                    self.model.optimizer,
-                    self.model.rpn_cls_loss,
-                    self.model.rpn_reg_loss,
+                    y, probs,
+                    self.model.loss,
                     self.model.regularization_loss,
                 ],
                 feed_dict=feed_dict
             )
+
+            loss = loss - regularization_loss
+            losses.append(loss)
+
+            b = boxes[p >= 0.5]
+            iou = bbox_overlap(Y_val, b)
+            ious.append(np.mean(iou))
+
+        print("test loss:", np.mean(losses))
+        print("mAP", np.mean(ious))

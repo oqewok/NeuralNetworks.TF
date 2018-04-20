@@ -1,10 +1,9 @@
-from Structured.base.base_model import BaseModel
-from Structured.nets.vgg16 import build_basic_vgg16
-from Structured.models.vgg_pretrained import get_vgg16_pretrained
-from Structured.models.fasterrcnn.rpn import RPN
-from Structured.models.fasterrcnn.rcnn import RCNN
-
 import tensorflow as tf
+
+from Structured.base.base_model import BaseModel
+from Structured.models.fasterrcnn.rcnn import RCNN
+from Structured.models.fasterrcnn.rpn import RPN
+from Structured.nets.vgg16_pretrained import get_vgg16_pretrained
 
 
 class FasterRCNNModel(BaseModel):

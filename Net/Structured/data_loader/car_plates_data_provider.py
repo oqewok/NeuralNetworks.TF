@@ -31,7 +31,7 @@ class CarPlatesDataProvider():
 
         self.order = np.arange(self.num_train)
 
-        self.X_val, Y_val = self.samples['VALID'][0], self.samples['VALID'][1]
+        self.X_val, self.Y_val = self.samples['VALID'][0], self.samples['VALID'][1]
 
 
     # Загружает данные о разметке из txt-файлов в память.

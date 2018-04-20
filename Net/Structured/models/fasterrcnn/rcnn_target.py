@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from Structured.utils.bbox_transform import encode
-from Structured.utils.bbox_overlap import bbox_overlap
+from Structured.utils.bbox_overlap import bbox_overlap_tf
 
 
 class RCNNTarget:
@@ -60,7 +60,7 @@ class RCNNTarget:
                         The shape of the Tensor is (num_proposals, 4).
                 """
 
-        overlaps = bbox_overlap(proposals, gt_boxes[:, :4])
+        overlaps = bbox_overlap_tf(proposals, gt_boxes[:, :4])
 
         # overlaps now contains (num_proposals, num_gt_boxes) with the IoU of
         # proposal P and ground truth box G in overlaps[P, G]

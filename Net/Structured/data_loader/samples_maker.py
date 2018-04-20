@@ -30,6 +30,6 @@ def make_samples_file(config_file, type):
 
 if __name__ == '__main__':
     make_samples_file(
-        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\\Structured\\configs\\fastercnn.json",
+        "E:\\Study\\Mallenom\\NeuralNetworks.TF\\Net\\Structured\\configs\\fastercnn.json",
         "xml"
     )

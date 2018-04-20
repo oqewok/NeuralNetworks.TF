@@ -1,7 +1,9 @@
 from Structured.base.base_train import BaseTrain
 from Structured.utils.bbox_overlap import bbox_overlap
+from Structured.utils.img_preproc import *
 from tqdm import tqdm
 
+import tensorflow as tf
 import numpy as np
 import os
 
@@ -81,6 +83,8 @@ class FasterRCNNTrainer(BaseTrain):
         print("\n regularization loss:", mean_regularization_loss)
         print("\n total - regularization loss:", mean_total_loss - mean_regularization_loss)
 
+        valid_loss, R, P = self.valid()
+
         if self.config.with_rcnn:
             if mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss < self.best_loss:
                 self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss
@@ -100,15 +104,8 @@ class FasterRCNNTrainer(BaseTrain):
                     )
                 )
 
-            pb_file = os.path.join(
-                self.config.checkpoint_dir,
-                "fasterrcnn.pb")
 
-            with open(pb_file, 'wb') as f:
-                f.write(self.sess.graph_def.SerializeToString())
-
-
-        print(print("\nbest loss:", self.best_loss))
+        print("\nbest loss:", self.best_loss)
         # summaries_dict = {
         #     'rpn_cls_loss': mean_rpn_cls_loss,
         #     'rpn_reg_losses': mean_rpn_reg_loss,
@@ -136,8 +133,7 @@ class FasterRCNNTrainer(BaseTrain):
        - return any metrics you need to summarize
        """
         img, boxes = self.data.next_img()
-
-        #img = preprocess(img)
+        img = mobilenet_preprocess(img)
 
         feed_dict = {
             self.model.inputs_tensor: [img],
@@ -177,17 +173,20 @@ class FasterRCNNTrainer(BaseTrain):
     def valid(self):
         X_val, Y_val = self.data.X_val, self.data.Y_val
 
-        y = self.sess.graph_def.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
-        probs = self.sess.graph_def.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
+        y = self.model.rpn_roi_proposals
+        probs = self.model.rpn_cls_scores
         losses = []
-        ious = []
+        correct = 0.0
+        all_gt = 0.0
+        all_pred = 0.0
 
-        for _ in tqdm(range(len(X_val))):
-            img, boxes = self.data.next_img()
+        for _ in range(len(X_val)):
+            img, gt = self.data.next_img()
+            img = mobilenet_preprocess(img)
 
             feed_dict = {
                 self.model.inputs_tensor: [img],
-                self.model.gt_boxes: boxes,
+                self.model.gt_boxes: gt,
                 self.model.is_training_tensor: self.model.is_training,
             }
 
@@ -204,8 +203,23 @@ class FasterRCNNTrainer(BaseTrain):
             losses.append(loss)
 
             b = boxes[p >= 0.5]
-            iou = bbox_overlap(Y_val, b)
-            ious.append(np.mean(iou))
+            a = gt[:, 0:4]
+            iou = bbox_overlap(a, b)
+            true = iou >= 0.5
 
-        print("test loss:", np.mean(losses))
-        print("mAP", np.mean(ious))
+            correct = correct + len(iou[true])
+            all_gt = all_gt + len(a)
+            all_pred = all_pred + len(b)
+
+        R = correct / all_gt
+        P = 0.0
+
+        if all_pred > 0:
+            P = correct / all_pred
+
+        valid_loss = np.mean(losses)
+        print("\n validation loss:", valid_loss)
+        print("\nR:", R)
+        print("P:", P)
+
+        return valid_loss, R, P

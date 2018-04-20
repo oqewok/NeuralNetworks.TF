@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from Structured.utils.operations import *
-from Structured.utils.img_preproc import preprocess
+from Structured.utils.img_preproc import vgg_preprocess
 
 def weight_variable(name, shape):
     initial = tf.truncated_normal(shape, stddev=0.1)

@@ -86,9 +86,13 @@ def adjust_bboxes(bboxes, old_shape, new_shape):
 
 
 
-def preprocess(inputs):
-    inputs = subtract_channels(inputs)
+def vgg_preprocess(inputs):
     inputs = normalize(inputs)
+
+    return inputs
+
+def mobilenet_preprocess(inputs):
+    inputs = inputs / 128. - 1
 
     return inputs
 
@@ -121,7 +125,6 @@ def normalize(inputs):
             Its shape is the same as the input.
     """
     inputs = inputs / 255.
-    #inputs = (inputs - 0.5) * 2.
     return inputs
 
 

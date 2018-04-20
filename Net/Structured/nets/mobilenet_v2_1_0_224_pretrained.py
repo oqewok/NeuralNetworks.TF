@@ -3,7 +3,6 @@ from skimage import io
 from Structured.utils.img_preproc import *
 
 
-
 import numpy as np
 import os
 
@@ -29,11 +28,10 @@ def get_mobilenet_pretrained():
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        print("variables initialized")
 
-        ops = graph.get_operations()
-        print(np.array(ops))
+        #ops = graph.get_operations()
         feature_map = graph.get_tensor_by_name("import/MobilenetV2/Conv_1/Relu6:0")
+        feature_map = tf.reshape(feature_map, [1, 7, 7, 1280])
         #feature_map = graph.get_tensor_by_name("import/MobilenetV2/Conv_1/BatchNorm/FusedBatchNorm:0")
 
         return input, feature_map, [7, 7, 1280]

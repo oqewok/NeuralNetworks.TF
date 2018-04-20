@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from Structured.utils.bbox_transform import encode
-from Structured.utils.bbox_overlap import bbox_overlap
+from Structured.utils.bbox_overlap import bbox_overlap_tf
 
 class RPNTarget:
     """RPNTarget: Get RPN's classification and regression targets.
@@ -122,7 +122,7 @@ class RPNTarget:
 
         # Intersection over union (IoU) overlap between the anchors and the
         # ground truth boxes.
-        overlaps = bbox_overlap(anchors, gt_boxes)
+        overlaps = bbox_overlap_tf(anchors, gt_boxes)
 
         # Generate array with the IoU value of the closest GT box for each
         # anchor.

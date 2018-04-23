@@ -38,8 +38,8 @@ class BaseModel:
     # just inialize a tensorflow variable to use it as global step counter
     def init_global_step(self):
         # DON'T forget to add the global step tensor to the tensorflow trainer
-        with tf.variable_scope('global_step'):
-            self.global_step_tensor = tf.Variable(0, trainable=False, name='global_step')
+        with tf.variable_scope('global_step2'):
+            self.global_step_tensor = tf.Variable(0, trainable=False, name='global_step2')
 
     def init_saver(self):
         # just copy the following line in your child class

@@ -181,11 +181,12 @@ class FasterRCNNTrainer(BaseTrain):
         all_pred = 0.0
 
         for _ in range(len(X_val)):
-            img, gt = self.data.next_img()
+            img, gt = self.data.next_batch(type="VALID")
             img = mobilenet_preprocess(img)
+            gt = gt[0]
 
             feed_dict = {
-                self.model.inputs_tensor: [img],
+                self.model.inputs_tensor: img,
                 self.model.gt_boxes: gt,
                 self.model.is_training_tensor: self.model.is_training,
             }

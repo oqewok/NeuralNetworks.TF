@@ -79,7 +79,12 @@ class CarPlatesDataProvider():
         elif type == "TEST":
             indices = np.random.permutation(self.num_test)
         else:
-            indices = np.random.permutation(self.num_valid)
+            order = np.arange(self.num_valid)
+            indices = order[self.batch_idx * batch_size:self.batch_idx * batch_size + batch_size]
+            if self.batch_idx < self.num_valid - 1:
+                self.batch_idx = self.batch_idx + 1
+            else:
+                self.batch_idx = 0
 
         img_files = img_files[indices]
         bboxes_files = bboxes_files[indices]

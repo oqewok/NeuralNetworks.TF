@@ -1,10 +1,39 @@
 import tensorflow as tf
 import os
 
+from Structured.nets.vgg16_pretrained import get_vgg16_pretrained
+from Structured.nets.mobilenet_v1_1_0_224_pretrained import get_mobilenet_v1_1_0_pretrained
+from Structured.nets.mobilenet_v1_0_75_224_pretrained import get_mobilenet_v1_0_75_pretrained
+from Structured.nets.mobilenet_v1_0_5_224_pretrained import get_mobilenet_v1_0_5_pretrained
+from Structured.nets.mobilenet_v1_0_25_224_pretrained import get_mobilenet_v1_0_25_pretrained
+from Structured.nets.mobilenet_v2_0_75_224_pretrained import get_mobilenet_v2_0_75_pretrained
+from Structured.nets.mobilenet_v2_1_0_224_pretrained import get_mobilenet_v2_1_0_pretrained
+from Structured.nets.mobilenet_v2_1_4_224_pretrained import get_mobilenet_v2_1_4_pretrained
+from Structured.nets.resnet50_v2_pretrained import get_resnet_v2_pretrained
 
 class BaseModel:
     def __init__(self, config):
         self.config = config
+
+        if self.config.basic_cnn == "vgg16":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_vgg16_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_1.0_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_1_0_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_0.75_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_0_75_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_0.5_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_0_5_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_0.25_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_0_25_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_0.75_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v2_0_75_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_1.0_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v2_1_0_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_1.4_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v2_1_4_pretrained()
+        elif self.config.basic_cnn == "resnet50_v2":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_resnet_v2_pretrained()
+
         # init the global step
         self.init_global_step()
 
@@ -14,6 +43,7 @@ class BaseModel:
         self.init_cur_epoch()
 
         self.saver            = None
+
 
     # save function thet save the checkpoint in the path defined in configfile
     def save(self, sess):

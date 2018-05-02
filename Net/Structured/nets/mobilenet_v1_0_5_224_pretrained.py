@@ -8,9 +8,9 @@ import os
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 
-def get_mobilenet_v1_1_0_pretrained():
+def get_mobilenet_v1_0_5_pretrained():
     with open(
-            "C:\\Users\\admin\\Documents\\GeneralProjectData\\mobilenet\\mobilenet_v1_1.0_224\\mobilenet_v1_1.0_224_frozen.pb",
+            "C:\\Users\\admin\\Documents\\GeneralProjectData\\mobilenet\\mobilenet_v1_0.5_224\\mobilenet_v1_0.5_224_frozen.pb",
             mode='rb') as f:
         fileContent = f.read()
 
@@ -31,10 +31,10 @@ def get_mobilenet_v1_1_0_pretrained():
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        # ops = graph.get_operations()
-        # print(list(ops))
+        #ops = graph.get_operations()
+        #print(list(ops))
 
-        # feature_map = graph.get_tensor_by_name("import/MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Relu6:0")
+        #feature_map = graph.get_tensor_by_name("import/MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Relu6:0")
         feature_map = graph.get_tensor_by_name("import/MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Relu6:0")
         feats_shape = list(np.array(feature_map.shape[1:4], np.int32))
 
@@ -42,4 +42,4 @@ def get_mobilenet_v1_1_0_pretrained():
 
 
 if __name__ == '__main__':
-    get_mobilenet_v1_1_0_pretrained()
+    get_mobilenet_v1_0_5_pretrained()

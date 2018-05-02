@@ -8,7 +8,7 @@ import os
 
 np.set_printoptions(threshold=np.nan, suppress=True)
 
-def get_mobilenet_pretrained():
+def get_mobilenet_v2_1_0_pretrained():
     with open("C:\\Users\\admin\\Documents\\GeneralProjectData\\mobilenet\\mobilenet_v2_1.0_224\\mobilenet_v2_1.0_224_frozen.pb", mode='rb') as f:
         fileContent = f.read()
 
@@ -28,14 +28,17 @@ def get_mobilenet_pretrained():
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        #ops = graph.get_operations()
+        ops = graph.get_operations()
+        print(ops)
 
-        feature_map = graph.get_tensor_by_name("import/MobilenetV2/Conv_1/Relu6:0")
+        feature_map = graph.get_tensor_by_name("import/MobilenetV2/expanded_conv_12/project/BatchNorm/FusedBatchNorm:0")
+        #feature_map = graph.get_tensor_by_name("import/MobilenetV2/expanded_conv_5/project/BatchNorm/FusedBatchNorm:0")
+        # feature_map = graph.get_tensor_by_name("import/MobilenetV2/Conv_1/Relu6:0")
         # feature_map = graph.get_tensor_by_name("import/MobilenetV2/Conv_1/BatchNorm/FusedBatchNorm:0")
-        feature_map = tf.reshape(feature_map, [1, 7, 7, 1280])
+        #feature_map = tf.reshape(feature_map, [1, 7, 7, 1280])
 
-        return input, feature_map, [7, 7, 1280]
+        return input, feature_map, [28, 28, 32]
 
 
 if __name__ == '__main__':
-    get_mobilenet_pretrained()
+    get_mobilenet_v2_1_0_pretrained()

@@ -16,7 +16,8 @@ class FasterRCNNTrainer(BaseTrain):
         self.best_loss = 100000000000
         self.best_rpn_loss = 100000000000
         self.best_cls_loss = 100000000000
-
+        self.R = 0.0
+        self.P = 0.0
 
     def train_epoch(self):
         """
@@ -95,36 +96,17 @@ class FasterRCNNTrainer(BaseTrain):
                     )
                 )
         else:
-            if mean_rpn_cls_loss + mean_rpn_reg_loss  < self.best_loss:
-                self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss
-
+            if np.mean([self.R, self.P]) < np.mean([R, P]):
+                self.R = R
+                self.P = P
                 self.model.saver.save(
                     self.sess, os.path.join(
                         self.config.checkpoint_dir, self.config.exp_name
                     )
                 )
 
-
-        print("\nbest loss:", self.best_loss)
-        # summaries_dict = {
-        #     'rpn_cls_loss': mean_rpn_cls_loss,
-        #     'rpn_reg_losses': mean_rpn_reg_loss,
-        #     'total_loss': mean_total_loss
-        # }
-        #
-        # if self.config.with_rcnn:
-        #     summaries_dict.update({
-        #         'rcnn_cls_losses': mean_rcnn_cls_loss,
-        #         'rcnn_reg_losses': mean_rcnn_reg_loss,
-        #     })
-        #
-        # self.logger.summarize(cur_it, summaries_dict=summaries_dict)
-
-        # self.model.saver.save(
-        #     self.sess, os.path.join(
-        #         self.config.checkpoint_dir, self.config.exp_name
-        #     )
-        # )
+        print("\nbest R:", self.R)
+        print("best P:", self.P)
 
     def train_step(self):
         """
@@ -168,7 +150,6 @@ class FasterRCNNTrainer(BaseTrain):
             )
 
             return rpn_cls_loss, rpn_reg_loss, regularization_loss
-
 
     def valid(self):
         X_val, Y_val = self.data.X_val, self.data.Y_val

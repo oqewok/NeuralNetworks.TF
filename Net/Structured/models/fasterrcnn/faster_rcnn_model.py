@@ -3,9 +3,6 @@ import tensorflow as tf
 from Structured.base.base_model import BaseModel
 from Structured.models.fasterrcnn.rcnn import RCNN
 from Structured.models.fasterrcnn.rpn import RPN
-from Structured.nets.vgg16_pretrained import get_vgg16_pretrained
-from Structured.nets.mobilenet_v1_1_0_224_pretrained import get_mobilenet_pretrained
-from Structured.nets.resnet50_v2_pretrained import get_resnet_v2_pretrained
 
 
 class FasterRCNNModel(BaseModel):
@@ -38,20 +35,12 @@ class FasterRCNNModel(BaseModel):
         # Value of training mode
         self.is_training = self.config.is_training
 
-        # Inputs or X. Tensor for the batch of images.
-        self.inputs_tensor      = None
-
         # GT boxes tensor.
         self.gt_boxes = tf.placeholder(shape=[None, 5], dtype=tf.float32, name="gt_boxes")
 
         # Tensor for training mode description. If true => training mode, else => evaluation mode.
         self.is_training_tensor = tf.placeholder(tf.bool, name="is_train")
 
-        # convolution features after basic CNN feature extraction
-        self.conv_feats_tensor  = None
-
-        # convolution features shape (ndarray).
-        self.conv_feats_shape   = None
 
         self.with_rcnn = self.config.with_rcnn
         # Build basic CNN for feature extraction. Default is VGG16.
@@ -59,12 +48,7 @@ class FasterRCNNModel(BaseModel):
         elif self.config.basic_cnn == "resnet50":
             self.inputs_tensor, self.is_training_tensor, self.conv_feats_tensor, self.conv_feats_shape = build_basic_resnet50(
             self.config)'''
-        if self.config.basic_cnn == "vgg16":
-            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_vgg16_pretrained()
-        elif self.config.basic_cnn == "mobilenet_v1_1.0_224":
-            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_pretrained()
-        elif self.config.basic_cnn == "resnet50_v2":
-            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_resnet_v2_pretrained()
+
 
         # Build RPN
         self.rpn = RPN(

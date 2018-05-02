@@ -13,13 +13,12 @@ class BaseTrain:
         self.data = data
         self.init = tf.global_variables_initializer()
         self.sess.run(self.init)
-        self.sess.run(tf.local_variables_initializer())
 
 
     def train(self):
         with tf.Graph().as_default():
             for cur_epoch in range(self.model.cur_epoch_tensor.eval(self.sess), self.config.num_epochs, 1):
-                print("Epoch", self.model.cur_epoch_tensor.eval(self.sess) + 1)
+                print("Epoch", self.model.cur_epoch_tensor.eval(self.sess) + 1, "/", self.config.num_epochs)
                 self.train_epoch()
                 self.sess.run(self.model.increment_cur_epoch_tensor)
 

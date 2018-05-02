@@ -17,16 +17,6 @@ with tf.Session() as sess:
     dir = "E:\\data\\checkpoint\\"
 
     graph_def = sess.graph_def
-    # pb_file = os.path.join(
-    #     dir,
-    #     "fasterrcnn.pb")
-    #
-    # with open(pb_file, 'wb') as f:
-    #     f.write(sess.graph_def.SerializeToString())
-    #
-    # with gfile.FastGFile(pb_file, 'rb') as f:
-    #     graph_def = tf.GraphDef()
-    #     graph_def.ParseFromString(f.read())
 
     frozen_graph_def = convert_variables_to_constants(sess, graph_def, ["BoundingBoxTransform/clip_bboxes_1/concat", "nms/gather_nms_proposals_scores"])
 

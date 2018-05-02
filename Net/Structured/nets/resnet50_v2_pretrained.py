@@ -19,7 +19,7 @@ def get_resnet_v2_pretrained():
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
-        saver.restore(sess, 'E:\\data\\resnet_v2_50\\resnet_v2_50.ckpt')
+        saver.restore(sess, 'C:\\Users\\admin\\Documents\\GeneralProjectData\\resnet\\resnet_v2_50\\resnet_v2_50.ckpt')
 
         feature_map = sess.graph.get_tensor_by_name('resnet_v2_50/block3/unit_5/bottleneck_v2/add:0')
         feats_shape = list(np.array(feature_map.shape[1:4], np.int32))

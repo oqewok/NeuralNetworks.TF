@@ -97,10 +97,12 @@ class MarkupParser:
 
                 label = None
                 try:
-                    label = COUNTRIES[c]
+                    #label = COUNTRIES[c]
+                    label = 1
                 except KeyError:
                     #print(xml_file)
-                    label = 100
+                    #label = 100
+                    label = 1
 
                 plates.append(np.stack((xmin, ymin, xmax, ymax, label)))
 

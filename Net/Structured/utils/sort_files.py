@@ -15,19 +15,16 @@ config = process_config(
 
 data = ArtificalCarPlatesDataProvider(config)
 
-X, Y = data.samples["TRAIN"][0], data.samples["TRAIN"][1]
+X, Y = data.samples["VALID"][0], data.samples["VALID"][1]
 parser = MarkupParser()
 
-dir = config.train_root_directory
+dir = os.path.join(config.train_root_directory, "validation")
 
 for i in range(len(X)):
-    country = parser.getCountry(Y[i])
+    if not os.path.exists(dir):
+        os.mkdir(dir)
 
-    new_path = os.path.join(dir, country)
-
-    if not os.path.exists(new_path):
-        os.mkdir(new_path)
-
-    os.rename(X[i], os.path.join(new_path, os.path.basename(X[i])))
-    os.rename(Y[i], os.path.join(new_path, os.path.basename(Y[i])))
+    if not os.path.exists(os.path.join(dir, os.path.basename(X[i]))):
+        os.rename(X[i], os.path.join(dir, os.path.basename(X[i])))
+        os.rename(Y[i], os.path.join(dir, os.path.basename(Y[i])))
 

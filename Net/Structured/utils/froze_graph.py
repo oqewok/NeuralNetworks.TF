@@ -5,16 +5,16 @@ from tensorflow.python.framework.graph_util import convert_variables_to_constant
 import os
 
 path = os.path.join(
-    "E:\\data\\checkpoint\\vgg16_rpn_10500_2.meta"
+    r"C:\Users\admin\Documents\GeneralProjectData\Projects\NeuralNetworks.TF\Net\Structured\experiments\mobilenet_v1_0_75_rpn_10650_1\checkpoint\mobilenet_v1_0_75_rpn_10650_1.meta"
 )
 
 with tf.Session() as sess:
     saver = tf.train.import_meta_graph(path)
     saver.restore(
-        sess, "E:\\data\\checkpoint\\vgg16_rpn_10500_2"
+        sess, r"C:\Users\admin\Documents\GeneralProjectData\Projects\NeuralNetworks.TF\Net\Structured\experiments\mobilenet_v1_0_75_rpn_10650_1"
         )
 
-    dir = "E:\\data\\checkpoint\\"
+    dir = r"C:\Users\admin\Documents\GeneralProjectData\Projects\NeuralNetworks.TF\Net\Structured\experiments\mobilenet_v1_0_75_rpn_10650_1"
 
     graph_def = sess.graph_def
 

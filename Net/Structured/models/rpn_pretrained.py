@@ -5,7 +5,7 @@ import os
 
 def get_rpn_pretrained():
     path = os.path.join(
-        "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\checkpoint\\vgg16_rpn_1000_7.meta"
+        r"C:\Users\admin\Documents\GeneralProjectData\Projects\NeuralNetworks.TF\Net\Structured\experiments\mobilenet_v1_1_0_rpn_10650_1\checkpoint\mobilenet_v1_1_0_rpn_10650_1.meta"
     )
 
     with tf.Session() as sess:
@@ -15,7 +15,7 @@ def get_rpn_pretrained():
         saver = tf.train.import_meta_graph(path)
         saver.restore(
             sess, tf.train.latest_checkpoint(
-                "C:\\Users\\admin\\Documents\\GeneralProjectData\\Projects\\NeuralNetworks.TF\\Net\Structured\\experiments\\vgg16_rpn_1000_7\\checkpoint"
+                r"C:\Users\admin\Documents\GeneralProjectData\Projects\NeuralNetworks.TF\Net\Structured\experiments\mobilenet_v1_1_0_rpn_10650_1\checkpoint"
             )
         )
 
@@ -23,7 +23,7 @@ def get_rpn_pretrained():
 
         images = graph.get_tensor_by_name('inputs:0')
         is_train = graph.get_tensor_by_name('is_train:0')
-        feature_map = graph.get_tensor_by_name("import/conv5_3/Relu:0")
+        feature_map = graph.get_tensor_by_name("import/MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Relu6:0")
         rpn_roi_proposals = graph.get_tensor_by_name('BoundingBoxTransform/clip_bboxes_1/concat:0')
         rpn_cls_scores = graph.get_tensor_by_name('nms/gather_nms_proposals_scores:0')
         gt_boxes = graph.get_tensor_by_name('gt_boxes:0')

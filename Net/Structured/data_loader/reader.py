@@ -44,13 +44,6 @@ class Reader():
                         root, name + ".xml"))
 
                     if os.path.exists(xmlfilepath):
-                        #
-                        """
-                            C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\Страны\\Испания\\car10029305.xml 0.7804522246535376
-                            C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\Страны\\ОАЭ\\car10058199.xml 0.88
-                            C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\Страны\\ОАЭ\\car10058206.xml 0.72375
-                            C:\\Users\\admin\\Documents\\GeneralProjectData\\Samples\\dataset\\Страны\\Румыния\\car10002654.xml 0.9614257812
-                        """
                         plates = parser.getBoundBoxes(xmlfilepath)
 
                         image = io.imread(filepath)

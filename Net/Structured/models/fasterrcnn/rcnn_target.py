@@ -138,8 +138,8 @@ class RCNNTarget:
         # because setting the best proposal for each gt_box has priority.
         best_proposals_gt_labels = tf.sparse_to_dense(
             sparse_indices=tf.reshape(best_proposals_idxs, [-1]),
-            #sparse_values=gt_boxes[:, 4],
-            sparse_values=gt_boxes[:, 4] + 1,
+            sparse_values=gt_boxes[:, 4],
+            #sparse_values=gt_boxes[:, 4] + 1,
             default_value=0.,
             output_shape=tf.cast(proposals_label_shape, tf.int64),
             validate_indices=False,

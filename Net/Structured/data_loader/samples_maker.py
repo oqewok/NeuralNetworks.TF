@@ -14,9 +14,9 @@ def make_samples_file(config_file, type):
         Reader.get_samples_file(config.train_root_directory, os.path.abspath(
             os.path.join(config.train_files_directory, "train.txt")))
         Reader.get_samples_file(config.valid_root_directory, os.path.abspath(
-            os.path.join(config.train_files_directory, "valid.txt")))
+           os.path.join(config.train_files_directory, "valid.txt")))
         Reader.get_samples_file(config.test_root_directory,  os.path.abspath(
-            os.path.join(config.train_files_directory, "test.txt")))
+           os.path.join(config.train_files_directory, "test.txt")))
     elif type == "json":
         Reader.get_samples_file_json(config.train_root_directory, os.path.abspath(
             os.path.join(config.train_files_directory, "train.txt")))

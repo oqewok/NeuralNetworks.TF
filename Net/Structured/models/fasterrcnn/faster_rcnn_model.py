@@ -4,6 +4,15 @@ from Structured.base.base_model import BaseModel
 from Structured.models.fasterrcnn.rcnn import RCNN
 from Structured.models.fasterrcnn.rpn import RPN
 
+from Structured.nets.vgg16_pretrained import get_vgg16_pretrained
+from Structured.nets.mobilenet_v1_1_0_224_pretrained import get_mobilenet_v1_1_0_pretrained
+from Structured.nets.mobilenet_v1_0_75_224_pretrained import get_mobilenet_v1_0_75_pretrained
+from Structured.nets.mobilenet_v1_0_5_224_pretrained import get_mobilenet_v1_0_5_pretrained
+from Structured.nets.mobilenet_v1_0_25_224_pretrained import get_mobilenet_v1_0_25_pretrained
+from Structured.nets.mobilenet_v2_0_75_224_pretrained import get_mobilenet_v2_0_75_pretrained
+from Structured.nets.mobilenet_v2_1_0_224_pretrained import get_mobilenet_v2_1_0_pretrained
+from Structured.nets.mobilenet_v2_1_4_224_pretrained import get_mobilenet_v2_1_4_pretrained
+from Structured.nets.resnet50_v2_pretrained import get_resnet_v2_pretrained
 
 class FasterRCNNModel(BaseModel):
     def __init__(self, config):
@@ -41,6 +50,24 @@ class FasterRCNNModel(BaseModel):
         # Tensor for training mode description. If true => training mode, else => evaluation mode.
         self.is_training_tensor = tf.placeholder(tf.bool, name="is_train")
 
+        if self.config.basic_cnn == "vgg16":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_vgg16_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_1.0_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_1_0_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_0.75_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_0_75_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_0.5_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_0_5_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v1_0.25_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v1_0_25_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_0.75_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v2_0_75_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_1.0_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v2_1_0_pretrained()
+        elif self.config.basic_cnn == "mobilenet_v2_1.4_224":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_mobilenet_v2_1_4_pretrained()
+        elif self.config.basic_cnn == "resnet50_v2":
+            self.inputs_tensor, self.conv_feats_tensor, self.conv_feats_shape = get_resnet_v2_pretrained()
 
         self.with_rcnn = self.config.with_rcnn
         # Build basic CNN for feature extraction. Default is VGG16.

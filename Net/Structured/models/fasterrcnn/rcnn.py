@@ -112,11 +112,13 @@ class RCNN:
         # ones and it should be easy to tune it from the network config.
 
         # Compute the RoI classification results
-        fc6_feats = fully_connected(proposals, 4096, 'rcn_fc6', init_w='variance_scaling', reg=self.reg, group_id=2)
+        #fc6_feats = fully_connected(proposals, 4096, 'rcn_fc6', init_w='variance_scaling', reg=self.reg, group_id=2)
+        fc6_feats = fully_connected(proposals, 750, 'rcn_fc6', init_w='normal', reg=self.reg, group_id=2)
         fc6_feats = nonlinear(fc6_feats, 'relu')
         fc6_feats = dropout(fc6_feats, self.dropout_prob, is_training)
 
-        fc7_feats = fully_connected(fc6_feats, 4096, 'rcn_fc7', init_w='variance_scaling', reg=self.reg, group_id=2)
+        #fc7_feats = fully_connected(fc6_feats, 4096, 'rcn_fc7', init_w='variance_scaling', reg=self.reg, group_id=2)
+        fc7_feats = fully_connected(fc6_feats, 750, 'rcn_fc7', init_w='normal', reg=self.reg, group_id=2)
         fc7_feats = nonlinear(fc7_feats, 'relu')
         fc7_feats = dropout(fc7_feats, self.dropout_prob, is_training)
 

@@ -1,3 +1,5 @@
+from tensorflow.python.framework.errors_impl import InvalidArgumentError
+
 from Structured.base.base_train import BaseTrain
 from Structured.utils.bbox_overlap import bbox_overlap
 from Structured.utils.img_preproc import *
@@ -86,24 +88,14 @@ class FasterRCNNTrainer(BaseTrain):
 
         valid_loss, R, P = self.valid()
 
-        if self.config.with_rcnn:
-            if mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss < self.best_loss:
-                self.best_loss = mean_rpn_cls_loss + mean_rpn_reg_loss + mean_rcnn_cls_loss + mean_rcnn_reg_loss
-
-                self.model.saver.save(
-                    self.sess, os.path.join(
-                        self.config.checkpoint_dir, self.config.exp_name
-                    )
+        if np.mean([self.R, self.P]) < np.mean([R, P]):
+            self.R = R
+            self.P = P
+            self.model.saver.save(
+                self.sess, os.path.join(
+                    self.config.checkpoint_dir, self.config.exp_name
                 )
-        else:
-            if np.mean([self.R, self.P]) < np.mean([R, P]):
-                self.R = R
-                self.P = P
-                self.model.saver.save(
-                    self.sess, os.path.join(
-                        self.config.checkpoint_dir, self.config.exp_name
-                    )
-                )
+            )
 
         print("\nbest R:", self.R)
         print("best P:", self.P)
@@ -125,19 +117,25 @@ class FasterRCNNTrainer(BaseTrain):
 
         # self.sess = tf_debug.TensorBoardDebugWrapperSession(self.sess, "1080Ti:8908")
         if self.config.with_rcnn:
-            _, rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss = self.sess.run(
-                [
-                    self.model.optimizer,
-                    self.model.rpn_cls_loss,
-                    self.model.rpn_reg_loss,
-                    self.model.rcnn_cls_loss,
-                    self.model.rcnn_reg_loss,
-                    self.model.regularization_loss,
-                ],
-                feed_dict=feed_dict
-            )
+            try:
+                _, rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss = self.sess.run(
+                    [
+                        self.model.optimizer,
+                        self.model.rpn_cls_loss,
+                        self.model.rpn_reg_loss,
+                        self.model.rcnn_cls_loss,
+                        self.model.rcnn_reg_loss,
+                        self.model.regularization_loss,
+                    ],
+                    feed_dict=feed_dict
+                )
 
-            return rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss
+                return rpn_cls_loss, rpn_reg_loss, rcnn_cls_loss, rcnn_reg_loss, regularization_loss
+
+            except InvalidArgumentError:
+                #print(self.data.samples["TRAIN"][0][self.data.batch_idx])
+                return 0, 0, 0, 0, 0
+
         else:
             _, rpn_cls_loss, rpn_reg_loss, regularization_loss = self.sess.run(
                 [
@@ -154,8 +152,13 @@ class FasterRCNNTrainer(BaseTrain):
     def valid(self):
         X_val, Y_val = self.data.X_val, self.data.Y_val
 
-        y = self.model.rpn_roi_proposals
-        probs = self.model.rpn_cls_scores
+        if not self.config.with_rcnn:
+            y = self.model.rpn_roi_proposals
+            probs = self.model.rpn_cls_scores
+        else:
+            y = self.model.objects
+            probs = self.model.proposal_label_prob
+
         losses = []
         correct = 0.0
         all_gt = 0.0
@@ -172,14 +175,18 @@ class FasterRCNNTrainer(BaseTrain):
                 self.model.is_training_tensor: self.model.is_training,
             }
 
-            boxes, p, loss, regularization_loss = self.sess.run(
-                [
-                    y, probs,
-                    self.model.loss,
-                    self.model.regularization_loss,
-                ],
-                feed_dict=feed_dict
-            )
+            try:
+                boxes, p, loss, regularization_loss = self.sess.run(
+                    [
+                        y, probs,
+                        self.model.loss,
+                        self.model.regularization_loss,
+                    ],
+                    feed_dict=feed_dict
+                )
+            except InvalidArgumentError:
+                #print(self.data.samples["TRAIN"][0][self.data.batch_idx])
+                continue
 
             loss = loss - regularization_loss
             losses.append(loss)
